@@ -31,6 +31,7 @@ namespace MTCG
             }
             else
             {
+                
                 //throw new Exception();
             }
         }
@@ -39,6 +40,12 @@ namespace MTCG
             Database db = new Database();
             Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
             db.Register(username, password, conn);
+        }
+        public async void LoginByCredentials(string username, string password)
+        {
+            Database db = new Database();
+            Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
+            db.LoginByCredentials(username, password, conn);
         }
         internal static string GetStringSha256Hash(string text)
         {

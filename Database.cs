@@ -20,59 +20,83 @@ namespace MTCG
 		}
 		public async void Register(string username, string password, Npgsql.NpgsqlConnection conn)
 		{
-			int uid = await GetUIDByUsername(username, conn);
-            if(uid == 0)
+			var cmd = new NpgsqlCommand("",conn);
+			int uid = await GetUIDByUsername(username, cmd);
+			if (uid == 0)
             {
-				await using (var cmd = new NpgsqlCommand($"INSERT INTO users(username, password) VALUES('{username}', '{password}')", conn))
-				{
+					cmd.CommandText = $"INSERT INTO users(username, password) VALUES('{username}', '{password}')";
 					await cmd.ExecuteNonQueryAsync();
-				}
-				uid = await GetUIDByUsername(username, conn);
-				SetUserBalance(uid, conn);
-				SetAccessToken(uid, username, password, conn);
-                Console.WriteLine(await GetUserBalance(username, conn));
+					//test(cmd);
+					uid = await GetUIDByUsername(username, cmd);
+					SetUserBalance(uid, cmd);
+					SetAccessToken(uid, username, password, cmd);
+					Console.WriteLine(await GetUserBalance(username, cmd));
+				
 			}
             else
             {
                 Console.WriteLine("Username is already taken. Please choose a different username!");
             }
 		}
-		public async Task<int> GetUIDByUsername(string username, Npgsql.NpgsqlConnection conn)
+		public async void LoginByCredentials(string username, string password, Npgsql.NpgsqlConnection conn)
 		{
-			await using (var cmd = new NpgsqlCommand($"SELECT uid FROM users WHERE username = '{username}'", conn))
+			var cmd = new NpgsqlCommand($"SELECT u.uid, u.username, act.\"accessToken\", act.due_date FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE u.username = '{username}' AND u.password = '{password}'", conn);
+			await using (var reader = await cmd.ExecuteReaderAsync())
+				while (await reader.ReadAsync())
+				{
+					int uid = (int)reader["uid"];
+					string accessToken = (string)reader["accessToken"];
+					string due_date = reader["due_date"].ToString();
+					ValidateToken(accessToken, due_date);
+				}
+
+		}
+		public void ValidateToken(string access_token, string due_date)
+		{
+			if(access_token.Contains(access_token))
+            {
+                if(DateTime.Now <= DateTime.Parse(due_date))
+                {
+                    Console.WriteLine("valid");
+                } else
+                {
+                    Console.WriteLine("invalid");
+                }
+               
+            }
+		}
+		public async Task<int> GetUIDByUsername(string username, Npgsql.NpgsqlCommand cmd)
+		{
+			cmd.CommandText = $"SELECT uid FROM users WHERE username = '{username}'";
 			await using (var reader = await cmd.ExecuteReaderAsync())
 				while (await reader.ReadAsync())
 					return reader.GetInt32(0);
 			return 0;
 		}
-		public async void SetUserBalance(int uid, Npgsql.NpgsqlConnection conn)
+		public async void SetUserBalance(int uid, Npgsql.NpgsqlCommand cmd)
         {
-			await using (var cmd = new NpgsqlCommand($"INSERT INTO balances(uid, coins) VALUES('{uid}', 20)", conn))
-			{
+			cmd.CommandText = $"INSERT INTO balances(uid, coins) VALUES('{uid}', 20)";
 				await cmd.ExecuteNonQueryAsync();
-			}
 		}
-		public async Task<int> GetUserBalance(string username, Npgsql.NpgsqlConnection conn)
+		public async Task<int> GetUserBalance(string username, Npgsql.NpgsqlCommand cmd)
 		{
-			int uid = await GetUIDByUsername(username, conn);
-			await using (var cmd = new NpgsqlCommand($"SELECT coins FROM balances WHERE uid = '{uid}'", conn))
+			int uid = await GetUIDByUsername(username, cmd);
+			cmd.CommandText = $"SELECT coins FROM balances WHERE uid = '{uid}'";
 			await using (var reader = await cmd.ExecuteReaderAsync())
 				while (await reader.ReadAsync())
 					return reader.GetInt32(0);
 			return 0;
 		}
-		public async void SetAccessToken(int uid, string username, string password, Npgsql.NpgsqlConnection conn)
+		public async void SetAccessToken(int uid, string username, string password, Npgsql.NpgsqlCommand cmd)
 		{
 			string hash = GetStringSha256Hash(username + password);
-			await using (var cmd = new NpgsqlCommand($"INSERT INTO access_tokens(uid, acessToken, due_date) VALUES('{uid}', '{hash}', '2022-01-01')", conn))
-			{
+			cmd.CommandText = $"INSERT INTO access_tokens(uid, \"accessToken\", due_date) VALUES('{uid}', '{hash}', '2022-01-01')";
 				await cmd.ExecuteNonQueryAsync();
-			}
 		}
-		public async Task<int> GetAccessToken(string username, Npgsql.NpgsqlConnection conn)
+		public async Task<int> GetAccessToken(string username, Npgsql.NpgsqlCommand cmd)
 		{
-			int uid = await GetUIDByUsername(username, conn);
-			await using (var cmd = new NpgsqlCommand($"SELECT coins FROM balances WHERE uid = '{uid}'", conn))
+			int uid = await GetUIDByUsername(username, cmd);
+			cmd.CommandText = $"SELECT coins FROM balances WHERE uid = '{uid}'";
 			await using (var reader = await cmd.ExecuteReaderAsync())
 				while (await reader.ReadAsync())
 					return reader.GetInt32(0);

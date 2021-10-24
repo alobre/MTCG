@@ -115,15 +115,20 @@ namespace MTCG
         {
             switch (query)
             {
+                case "/login":
+                    DatabaseHandler.Login(username: body.username, password: body.password);
+                    break;
+                case "/tokenLogin":
+                    DatabaseHandler.Login(access_token: body.accessToken);
+                    break;
                 case "/register":
                     Register(body.username, body.password);
                     break;
-                case "/login":
-                    break;
+                
             }
         }
 
-        static public void Register(string username, string password)
+        static public void Register(string username = "", string password = "", string access_token = "")
         {
             try
             {
@@ -137,17 +142,17 @@ namespace MTCG
 
         }
 
-        public bool login(string Username, string password)
+        /*static public void Login(string username = ", string password)
         {
-            if (User.Alle_User.Find(x => x.Usercredentials.username == Username && x.Usercredentials.password == password) == null)
+            try
             {
-                return false;
+                Login(username, password);
             }
-            else
+            catch (Exception e)
             {
-                return true;
+                throw new Exception("Registrierung fehlerhaft");
             }
-        }
+        }*/
 
         public void acquire_cards()
         {
