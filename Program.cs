@@ -36,23 +36,17 @@ namespace MTCG
             while (true)
             {
                 var client = await listener.AcceptTcpClientAsync();
-
                 _ = Task.Factory.StartNew(async (state) =>
                 {
                     TcpClient client1 = (TcpClient)state;
-
                     using (client1)
                     {
                         bool ende = true;
                         while (ende)
                         {
-
-
                             using (var ns = client1.GetStream())
                             {
-
                                 string Firstline, body = "";
-
                                 byte[] msg = new byte[4096];
                                 ns.Read(msg, 0, msg.Length);
                                 string request = Encoding.UTF8.GetString(msg).TrimEnd('\0');
@@ -85,20 +79,13 @@ namespace MTCG
                                     Console.WriteLine(jsonString);
                                     jsonBody = JsonSerializer.Deserialize<credentials>(jsonString);
                                     Console.WriteLine(jsonBody.username);
-                                    //Console.ReadKey();
                                 }
-
-                                /*string[] Option = Firstline.Split(' ');
-                                Option[1] = Option[1].Replace("/", "");*/
 
                                 switch (requestType.ToLower())
                                 {
-
                                     case "post":
                                         POST(query, jsonBody);
                                         break;
-
-
                                 }
 
                             }

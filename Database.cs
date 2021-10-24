@@ -38,7 +38,7 @@ namespace MTCG
                 Console.WriteLine("Username is already taken. Please choose a different username!");
             }
 		}
-		public async void LoginByCredentials(string username, string password, Npgsql.NpgsqlConnection conn)
+		public async Task<string> LoginByCredentials(string username, string password, Npgsql.NpgsqlConnection conn)
 		{
 			var cmd = new NpgsqlCommand($"SELECT u.uid, u.username, act.\"accessToken\", act.due_date FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE u.username = '{username}' AND u.password = '{password}'", conn);
 			await using (var reader = await cmd.ExecuteReaderAsync())
@@ -47,24 +47,55 @@ namespace MTCG
 					int uid = (int)reader["uid"];
 					string accessToken = (string)reader["accessToken"];
 					string due_date = reader["due_date"].ToString();
-					ValidateToken(accessToken, due_date);
+					if(await ValidateToken(accessToken, cmd) == true)
+                    {
+						return "Login successful!";
+                    }
 				}
+			return "Login failed. Please check your credentials.";
 
 		}
-		public void ValidateToken(string access_token, string due_date)
+		public async Task<bool> ValidateToken(string access_token, Npgsql.NpgsqlCommand cmd)
 		{
-			if(access_token.Contains(access_token))
-            {
-                if(DateTime.Now <= DateTime.Parse(due_date))
-                {
-                    Console.WriteLine("valid");
-                } else
-                {
-                    Console.WriteLine("invalid");
-                }
-               
-            }
+			string due_date;
+			int uid;
+			cmd.CommandText = $"SELECT u.uid, u.username, act.due_date FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE act.accessToken == {access_token}";
+			await using (var reader = await cmd.ExecuteReaderAsync())
+				while (await reader.ReadAsync())
+				{
+					uid = (int)reader["uid"];
+					due_date = reader["due_date"].ToString();
+					if (DateTime.Now <= DateTime.Parse(due_date))
+					{
+						return true;
+					}
+					else
+					{
+						return false;
+					}
+				}
+			return false;
+        }
+		public static async Task<string> GetAccessToken(string username, string password, Npgsql.NpgsqlCommand cmd)
+        {
+			cmd.CommandText = $"SELECT act.\"accessToken\" FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE u.username == {username} && u.password = {password}";
+			await using (var reader = await cmd.ExecuteReaderAsync())
+				while (await reader.ReadAsync())
+				{
+					return (string)reader["accessToken"];
+				}
+			return "credentials wrong";
 		}
+		/*public static async Task<string> ExtendAccessToken(string username, string password, Npgsql.NpgsqlCommand cmd)
+		{
+			cmd.CommandText = $"SELECT act.\"accessToken\" FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE u.username == {username} && u.password = {password}";
+			await using (var reader = await cmd.ExecuteReaderAsync())
+				while (await reader.ReadAsync())
+				{
+					return (string)reader["accessToken"];
+				}
+			return "credentials wrong";
+		}*/
 		public async Task<int> GetUIDByUsername(string username, Npgsql.NpgsqlCommand cmd)
 		{
 			cmd.CommandText = $"SELECT uid FROM users WHERE username = '{username}'";
