@@ -17,7 +17,7 @@ namespace MTCG
                 
             } else if(username != "" && password != "" )
             {
-                db.LoginByCredentials(username, password, conn);
+                Console.WriteLine(await db.LoginByCredentials(username, password, conn)); 
             }
             
         }
