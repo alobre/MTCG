@@ -1,0 +1,67 @@
+D:\FH-Technikum\3.Semester\SEW\ERSTE Stunde\Praxis\MTCG\bin\Debug\net5.0\MTCG.exe
+D:\FH-Technikum\3.Semester\SEW\ERSTE Stunde\Praxis\MTCG\bin\Debug\net5.0\MTCG.deps.json
+D:\FH-Technikum\3.Semester\SEW\ERSTE Stunde\Praxis\MTCG\bin\Debug\net5.0\MTCG.runtimeconfig.json
+D:\FH-Technikum\3.Semester\SEW\ERSTE Stunde\Praxis\MTCG\bin\Debug\net5.0\MTCG.runtimeconfig.dev.json
+D:\FH-Technikum\3.Semester\SEW\ERSTE Stunde\Praxis\MTCG\bin\Debug\net5.0\MTCG.dll
+D:\FH-Technikum\3.Semester\SEW\ERSTE Stunde\Praxis\MTCG\bin\Debug\net5.0\ref\MTCG.dll
+D:\FH-Technikum\3.Semester\SEW\ERSTE Stunde\Praxis\MTCG\bin\Debug\net5.0\MTCG.pdb
+D:\FH-Technikum\3.Semester\SEW\ERSTE Stunde\Praxis\MTCG\obj\Debug\net5.0\MTCG.csproj.AssemblyReference.cache
+D:\FH-Technikum\3.Semester\SEW\ERSTE Stunde\Praxis\MTCG\obj\Debug\net5.0\MTCG.GeneratedMSBuildEditorConfig.editorconfig
+D:\FH-Technikum\3.Semester\SEW\ERSTE Stunde\Praxis\MTCG\obj\Debug\net5.0\MTCG.AssemblyInfoInputs.cache
+D:\FH-Technikum\3.Semester\SEW\ERSTE Stunde\Praxis\MTCG\obj\Debug\net5.0\MTCG.AssemblyInfo.cs
+D:\FH-Technikum\3.Semester\SEW\ERSTE Stunde\Praxis\MTCG\obj\Debug\net5.0\MTCG.csproj.CoreCompileInputs.cache
+D:\FH-Technikum\3.Semester\SEW\ERSTE Stunde\Praxis\MTCG\obj\Debug\net5.0\MTCG.dll
+D:\FH-Technikum\3.Semester\SEW\ERSTE Stunde\Praxis\MTCG\obj\Debug\net5.0\ref\MTCG.dll
+D:\FH-Technikum\3.Semester\SEW\ERSTE Stunde\Praxis\MTCG\obj\Debug\net5.0\MTCG.pdb
+D:\FH-Technikum\3.Semester\SEW\ERSTE Stunde\Praxis\MTCG\obj\Debug\net5.0\MTCG.genruntimeconfig.cache
+C:\Users\alobre\Documents\FH\S03\SEW\MTCG\bin\Debug\net5.0\MTCG.exe
+C:\Users\alobre\Documents\FH\S03\SEW\MTCG\bin\Debug\net5.0\MTCG.deps.json
+C:\Users\alobre\Documents\FH\S03\SEW\MTCG\bin\Debug\net5.0\MTCG.runtimeconfig.json
+C:\Users\alobre\Documents\FH\S03\SEW\MTCG\bin\Debug\net5.0\MTCG.runtimeconfig.dev.json
+C:\Users\alobre\Documents\FH\S03\SEW\MTCG\bin\Debug\net5.0\MTCG.dll
+C:\Users\alobre\Documents\FH\S03\SEW\MTCG\bin\Debug\net5.0\ref\MTCG.dll
+C:\Users\alobre\Documents\FH\S03\SEW\MTCG\bin\Debug\net5.0\MTCG.pdb
+C:\Users\alobre\Documents\FH\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.csprojAssemblyReference.cache
+C:\Users\alobre\Documents\FH\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\alobre\Documents\FH\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.AssemblyInfoInputs.cache
+C:\Users\alobre\Documents\FH\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.AssemblyInfo.cs
+C:\Users\alobre\Documents\FH\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.csproj.CoreCompileInputs.cache
+C:\Users\alobre\Documents\FH\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.dll
+C:\Users\alobre\Documents\FH\S03\SEW\MTCG\obj\Debug\net5.0\ref\MTCG.dll
+C:\Users\alobre\Documents\FH\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.pdb
+C:\Users\alobre\Documents\FH\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.genruntimeconfig.cache
+H:\S03\SEW\MTCG\bin\Debug\net5.0\MTCG.exe
+H:\S03\SEW\MTCG\bin\Debug\net5.0\MTCG.deps.json
+H:\S03\SEW\MTCG\bin\Debug\net5.0\MTCG.runtimeconfig.json
+H:\S03\SEW\MTCG\bin\Debug\net5.0\MTCG.runtimeconfig.dev.json
+H:\S03\SEW\MTCG\bin\Debug\net5.0\MTCG.dll
+H:\S03\SEW\MTCG\bin\Debug\net5.0\ref\MTCG.dll
+H:\S03\SEW\MTCG\bin\Debug\net5.0\MTCG.pdb
+H:\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.csproj.AssemblyReference.cache
+H:\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.GeneratedMSBuildEditorConfig.editorconfig
+H:\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.AssemblyInfoInputs.cache
+H:\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.AssemblyInfo.cs
+H:\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.csproj.CoreCompileInputs.cache
+H:\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.dll
+H:\S03\SEW\MTCG\obj\Debug\net5.0\ref\MTCG.dll
+H:\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.pdb
+H:\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.genruntimeconfig.cache
+H:\S03\SEW\MTCG\bin\Debug\net5.0\Npgsql.dll
+F:\S03\SEW\MTCG\bin\Debug\net5.0\MTCG.exe
+F:\S03\SEW\MTCG\bin\Debug\net5.0\MTCG.deps.json
+F:\S03\SEW\MTCG\bin\Debug\net5.0\MTCG.runtimeconfig.json
+F:\S03\SEW\MTCG\bin\Debug\net5.0\MTCG.runtimeconfig.dev.json
+F:\S03\SEW\MTCG\bin\Debug\net5.0\MTCG.dll
+F:\S03\SEW\MTCG\bin\Debug\net5.0\ref\MTCG.dll
+F:\S03\SEW\MTCG\bin\Debug\net5.0\MTCG.pdb
+F:\S03\SEW\MTCG\bin\Debug\net5.0\Npgsql.dll
+F:\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.csprojAssemblyReference.cache
+F:\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.GeneratedMSBuildEditorConfig.editorconfig
+F:\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.AssemblyInfoInputs.cache
+F:\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.AssemblyInfo.cs
+F:\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.csproj.CoreCompileInputs.cache
+F:\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.csproj.CopyComplete
+F:\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.dll
+F:\S03\SEW\MTCG\obj\Debug\net5.0\ref\MTCG.dll
+F:\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.pdb
+F:\S03\SEW\MTCG\obj\Debug\net5.0\MTCG.genruntimeconfig.cache
