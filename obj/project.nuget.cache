@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "HbumC/DobqNq3MNn06LuJyaO3w65fBbprEizCpMxZhWMk4tyNI4yi3ExNnXnXT79VlxlOlHysPaycbbsydZ5jw==",
+  "dgSpecHash": "jWaooODsNEiYUEOjUHyYt/5X46Fn+h/UuhokjJxK44jk45pEjpf/jHpDFAyoZ+8bcdOuW70unRWVE+mt9bts8Q==",
   "success": true,
-  "projectFilePath": "C:\\Users\\wsowy\\Documents\\FH\\S03\\SEW\\MTCG\\MTCG.csproj",
+  "projectFilePath": "C:\\Users\\alobre\\Documents\\FH\\S03\\SEW\\MTCG\\MTCG.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\wsowy\\.nuget\\packages\\npgsql\\5.0.10\\npgsql.5.0.10.nupkg.sha512",
-    "C:\\Users\\wsowy\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\4.6.0\\system.runtime.compilerservices.unsafe.4.6.0.nupkg.sha512"
+    "C:\\Users\\alobre\\.nuget\\packages\\npgsql\\5.0.10\\npgsql.5.0.10.nupkg.sha512",
+    "C:\\Users\\alobre\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\4.6.0\\system.runtime.compilerservices.unsafe.4.6.0.nupkg.sha512"
   ],
   "logs": []
 }

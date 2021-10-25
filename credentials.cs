@@ -14,7 +14,7 @@ namespace MTCG
         [JsonInclude]
         public string password { get; set; }
         [JsonInclude]
-        public string accessToken { get; set; }
+        public string access_token { get; set; }
     }
 
 }

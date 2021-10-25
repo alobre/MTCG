@@ -78,13 +78,14 @@ namespace MTCG
                                     Console.WriteLine(body);
                                     Console.WriteLine(jsonString);
                                     jsonBody = JsonSerializer.Deserialize<credentials>(jsonString);
-                                    Console.WriteLine(jsonBody.username);
+                                    Console.WriteLine(jsonBody.access_token);
                                 }
 
                                 switch (requestType.ToLower())
                                 {
                                     case "post":
-                                        POST(query, jsonBody);
+                                        string response = await POST(query, jsonBody);
+                                        Console.WriteLine("Response: " + response);
                                         break;
                                 }
 
@@ -98,21 +99,22 @@ namespace MTCG
             }
         }
 
-        static public void POST(string query, credentials body)
+        static public async Task<string> POST(string query, credentials body)
         {
+            string response = "string.Empty";
             switch (query)
             {
                 case "/login":
-                    DatabaseHandler.Login(username: body.username, password: body.password);
+                    response = await DatabaseHandler.Login(username: body.username, password: body.password, access_token: body.access_token);
                     break;
                 case "/tokenLogin":
-                    DatabaseHandler.Login(access_token: body.accessToken);
+                    response = await DatabaseHandler.Login(access_token: body.access_token);
                     break;
                 case "/register":
-                    Register(body.username, body.password);
+                    DatabaseHandler.Register(body.username, body.password);
                     break;
-                
             }
+            return response;
         }
 
         static public void Register(string username = "", string password = "", string access_token = "")

@@ -30,7 +30,7 @@ namespace MTCG
 					uid = await GetUIDByUsername(username, cmd);
 					SetUserBalance(uid, cmd);
 					SetAccessToken(uid, username, password, cmd);
-					Console.WriteLine(await GetUserBalance(username, cmd));
+					//Console.WriteLine(await GetUserBalance(username, cmd));
 				
 			}
             else
@@ -40,26 +40,31 @@ namespace MTCG
 		}
 		public async Task<string> LoginByCredentials(string username, string password, Npgsql.NpgsqlConnection conn)
 		{
-			var cmd = new NpgsqlCommand($"SELECT u.uid, u.username, act.\"accessToken\", act.due_date FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE u.username = '{username}' AND u.password = '{password}'", conn);
+			int uid;
+			string access_token, due_date;
+			bool isValid;
+			var cmd = new NpgsqlCommand($"SELECT u.uid, u.username, act.access_token, act.due_date FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE u.username = '{username}' AND u.password = '{password}'", conn);
 			await using (var reader = await cmd.ExecuteReaderAsync())
 				while (await reader.ReadAsync())
 				{
-					int uid = (int)reader["uid"];
-					string accessToken = (string)reader["accessToken"];
-					string due_date = reader["due_date"].ToString();
-					if(await ValidateToken(accessToken, cmd) == true)
-                    {
-						return "Login successful!";
-                    }
+					uid = (int)reader["uid"];
+					access_token = (string)reader["access_token"];
+					due_date = reader["due_date"].ToString();
+					/*isValid = await ValidateToken(access_token, cmd);
+					if (isValid == true)
+					{
+						return $"{{msg:\"Login successful!\", uid: {uid}, access_token: \"{access_token}\"}}";
+					}*/
+					return $"{{msg:\"Login successful!\", uid: {uid}, access_token: \"{access_token}\"}}";
 				}
-			return "Login failed. Please check your credentials.";
+			return $"{{msg:\"Login failed. Please check your credentials.\"}}";
 
 		}
 		public async Task<bool> ValidateToken(string access_token, Npgsql.NpgsqlCommand cmd)
 		{
 			string due_date;
 			int uid;
-			cmd.CommandText = $"SELECT u.uid, u.username, act.due_date FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE act.accessToken == {access_token}";
+			cmd.CommandText = $"SELECT u.uid, u.username, act.due_date FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE act.access_token = '{access_token}'";
 			await using (var reader = await cmd.ExecuteReaderAsync())
 				while (await reader.ReadAsync())
 				{
@@ -78,11 +83,11 @@ namespace MTCG
         }
 		public static async Task<string> GetAccessToken(string username, string password, Npgsql.NpgsqlCommand cmd)
         {
-			cmd.CommandText = $"SELECT act.\"accessToken\" FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE u.username == {username} && u.password = {password}";
+			cmd.CommandText = $"SELECT act.access_token FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE u.username == {username} && u.password = {password}";
 			await using (var reader = await cmd.ExecuteReaderAsync())
 				while (await reader.ReadAsync())
 				{
-					return (string)reader["accessToken"];
+					return (string)reader["access_token"];
 				}
 			return "credentials wrong";
 		}
@@ -121,7 +126,7 @@ namespace MTCG
 		public async void SetAccessToken(int uid, string username, string password, Npgsql.NpgsqlCommand cmd)
 		{
 			string hash = GetStringSha256Hash(username + password);
-			cmd.CommandText = $"INSERT INTO access_tokens(uid, \"accessToken\", due_date) VALUES('{uid}', '{hash}', '2022-01-01')";
+			cmd.CommandText = $"INSERT INTO access_tokens(uid, access_token, due_date) VALUES('{uid}', '{hash}', '2022-01-01')";
 				await cmd.ExecuteNonQueryAsync();
 		}
 		public async Task<int> GetAccessToken(string username, Npgsql.NpgsqlCommand cmd)
