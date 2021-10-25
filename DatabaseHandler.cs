@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace MTCG
@@ -25,11 +26,11 @@ namespace MTCG
                 bool isValid = await db.ValidateToken(access_token, cmd);
                 if (isValid == true)
                 {
-                    return "{msg: \"access_token valid!\", sucess: true}";
+                    return "{msg: \"access_token valid!\", success: true}";
                 }
                 else
                 {
-                    return "{msg: \"access_token not valid! Please Login again!\", sucess: false}";
+                    return "{msg: \"access_token not valid! Please Login again!\", success: false}";
                 }
             } else if(username != "" && password != "" )
             {
@@ -40,5 +41,19 @@ namespace MTCG
             }
             return "none";
         }
+        /*public static async Task<string> OpenPack(string username = "", string password = "", string access_token = "")
+        {
+            if(username != "" && password !="" || access_token != "")
+            {
+                string loginResponse = await Login(username, password, access_token);
+                var json = JsonSerializer.Deserialize<credentials>(loginResponse);
+                if(json.success == true)
+                {
+
+                }
+            }
+            
+        }*/
+
     }
 }

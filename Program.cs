@@ -86,6 +86,16 @@ namespace MTCG
                                     case "post":
                                         string response = await POST(query, jsonBody);
                                         Console.WriteLine("Response: " + response);
+                                        string res = 
+                                        @$"HTTP/1.1 200 OK
+                                        Last-Modified: 25.20.2021
+                                        Content-Length:
+                                        Content-Type: application/json
+                                        Connection: Closed
+
+                                        {response}";
+                                        byte[] bytesToSend = System.Text.Encoding.ASCII.GetBytes(res);
+                                        ns.Write(bytesToSend, 0, bytesToSend.Length);
                                         break;
                                 }
 
@@ -107,12 +117,12 @@ namespace MTCG
                 case "/login":
                     response = await DatabaseHandler.Login(username: body.username, password: body.password, access_token: body.access_token);
                     break;
-                case "/tokenLogin":
-                    response = await DatabaseHandler.Login(access_token: body.access_token);
-                    break;
                 case "/register":
                     DatabaseHandler.Register(body.username, body.password);
                     break;
+                /*case "/openPack":
+                    response = await DatabaseHandler.OpenPack(username: body.username, password: body.password, access_token: body.access_token);
+                    break;*/
             }
             return response;
         }

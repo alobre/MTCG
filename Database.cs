@@ -43,7 +43,9 @@ namespace MTCG
 			int uid;
 			string access_token, due_date;
 			bool isValid;
-			var cmd = new NpgsqlCommand($"SELECT u.uid, u.username, act.access_token, act.due_date FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE u.username = '{username}' AND u.password = '{password}'", conn);
+			var cmd = new NpgsqlCommand($"SELECT u.uid, u.username, act.access_token, act.due_date FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE u.username = '(@username)' AND u.password = '(@password)'", conn);
+			cmd.Parameters.AddWithValue("username", username);
+			cmd.Parameters.AddWithValue("password", password);
 			await using (var reader = await cmd.ExecuteReaderAsync())
 				while (await reader.ReadAsync())
 				{
