@@ -120,9 +120,9 @@ namespace MTCG
                 case "/register":
                     DatabaseHandler.Register(body.username, body.password);
                     break;
-                /*case "/openPack":
+                case "/openPack":
                     response = await DatabaseHandler.OpenPack(username: body.username, password: body.password, access_token: body.access_token);
-                    break;*/
+                    break;
             }
             return response;
         }

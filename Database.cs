@@ -24,8 +24,10 @@ namespace MTCG
 			int uid = await GetUIDByUsername(username, cmd);
 			if (uid == 0)
             {
-					cmd.CommandText = $"INSERT INTO users(username, password) VALUES('{username}', '{password}')";
-					await cmd.ExecuteNonQueryAsync();
+					cmd.CommandText = $"INSERT INTO users(username, password) VALUES(@username, @password)";
+					cmd.Parameters.AddWithValue("username", username);
+					cmd.Parameters.AddWithValue("password", password);
+				await cmd.ExecuteNonQueryAsync();
 					//test(cmd);
 					uid = await GetUIDByUsername(username, cmd);
 					SetUserBalance(uid, cmd);
@@ -43,7 +45,7 @@ namespace MTCG
 			int uid;
 			string access_token, due_date;
 			bool isValid;
-			var cmd = new NpgsqlCommand($"SELECT u.uid, u.username, act.access_token, act.due_date FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE u.username = '(@username)' AND u.password = '(@password)'", conn);
+			var cmd = new NpgsqlCommand($"SELECT u.uid, u.username, act.access_token, act.due_date FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE u.username = @username AND u.password = @password", conn);
 			cmd.Parameters.AddWithValue("username", username);
 			cmd.Parameters.AddWithValue("password", password);
 			await using (var reader = await cmd.ExecuteReaderAsync())
@@ -57,18 +59,19 @@ namespace MTCG
 					{
 						return $"{{msg:\"Login successful!\", uid: {uid}, access_token: \"{access_token}\"}}";
 					}*/
-					return $"{{msg:\"Login successful!\", uid: {uid}, access_token: \"{access_token}\"}}";
+					return $"{{\"msg\":\"Login successful!\", \"uid\": {uid}, \"access_token\": \"{access_token}\", \"success\": true}}";
 				}
-			return $"{{msg:\"Login failed. Please check your credentials.\"}}";
+			return $"{{\"msg\":\"Login failed. Please check your credentials.\", \"success\": false}}";
 
 		}
 		public async Task<bool> ValidateToken(string access_token, Npgsql.NpgsqlCommand cmd)
 		{
 			string due_date;
 			int uid;
-			cmd.CommandText = $"SELECT u.uid, u.username, act.due_date FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE act.access_token = '{access_token}'";
+			cmd.CommandText = $"SELECT u.uid, u.username, act.due_date FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE act.access_token = @access_token";
+			cmd.Parameters.AddWithValue("access_token", access_token);
 			await using (var reader = await cmd.ExecuteReaderAsync())
-				while (await reader.ReadAsync())
+			while (await reader.ReadAsync())
 				{
 					uid = (int)reader["uid"];
 					due_date = reader["due_date"].ToString();
@@ -85,7 +88,9 @@ namespace MTCG
         }
 		public static async Task<string> GetAccessToken(string username, string password, Npgsql.NpgsqlCommand cmd)
         {
-			cmd.CommandText = $"SELECT act.access_token FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE u.username == {username} && u.password = {password}";
+			cmd.CommandText = $"SELECT act.access_token FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE u.username == @username && u.password = @password";
+			cmd.Parameters.AddWithValue("username", username);
+			cmd.Parameters.AddWithValue("password", password);
 			await using (var reader = await cmd.ExecuteReaderAsync())
 				while (await reader.ReadAsync())
 				{
@@ -105,7 +110,8 @@ namespace MTCG
 		}*/
 		public async Task<int> GetUIDByUsername(string username, Npgsql.NpgsqlCommand cmd)
 		{
-			cmd.CommandText = $"SELECT uid FROM users WHERE username = '{username}'";
+			cmd.CommandText = $"SELECT uid FROM users WHERE username = @username";
+			cmd.Parameters.AddWithValue("username", username);
 			await using (var reader = await cmd.ExecuteReaderAsync())
 				while (await reader.ReadAsync())
 					return reader.GetInt32(0);
@@ -113,13 +119,15 @@ namespace MTCG
 		}
 		public async void SetUserBalance(int uid, Npgsql.NpgsqlCommand cmd)
         {
-			cmd.CommandText = $"INSERT INTO balances(uid, coins) VALUES('{uid}', 20)";
-				await cmd.ExecuteNonQueryAsync();
+			cmd.CommandText = $"INSERT INTO balances(uid, coins) VALUES(@uid, 20)";
+			cmd.Parameters.AddWithValue("uid", uid);
+			await cmd.ExecuteNonQueryAsync();
 		}
 		public async Task<int> GetUserBalance(string username, Npgsql.NpgsqlCommand cmd)
 		{
 			int uid = await GetUIDByUsername(username, cmd);
-			cmd.CommandText = $"SELECT coins FROM balances WHERE uid = '{uid}'";
+			cmd.CommandText = $"SELECT coins FROM balances WHERE uid = '(@uid)'";
+			cmd.Parameters.AddWithValue("uid", uid);
 			await using (var reader = await cmd.ExecuteReaderAsync())
 				while (await reader.ReadAsync())
 					return reader.GetInt32(0);
@@ -128,16 +136,36 @@ namespace MTCG
 		public async void SetAccessToken(int uid, string username, string password, Npgsql.NpgsqlCommand cmd)
 		{
 			string hash = GetStringSha256Hash(username + password);
-			cmd.CommandText = $"INSERT INTO access_tokens(uid, access_token, due_date) VALUES('{uid}', '{hash}', '2022-01-01')";
-				await cmd.ExecuteNonQueryAsync();
+			cmd.CommandText = $"INSERT INTO access_tokens(uid, access_token, due_date) VALUES(@uid, @hash, '2022-01-01')";
+			cmd.Parameters.AddWithValue("uid", uid);
+			cmd.Parameters.AddWithValue("hash", hash);
+			await cmd.ExecuteNonQueryAsync();
 		}
 		public async Task<int> GetAccessToken(string username, Npgsql.NpgsqlCommand cmd)
 		{
 			int uid = await GetUIDByUsername(username, cmd);
-			cmd.CommandText = $"SELECT coins FROM balances WHERE uid = '{uid}'";
+			cmd.CommandText = $"SELECT coins FROM balances WHERE uid = @uid";
+			cmd.Parameters.AddWithValue("uid", uid);
 			await using (var reader = await cmd.ExecuteReaderAsync())
 				while (await reader.ReadAsync())
 					return reader.GetInt32(0);
+			return 0;
+		}
+			public async Task<int> OpenPack(int uid, Npgsql.NpgsqlCommand cmd)
+		{
+			cmd.CommandText = $"SELECT * FROM balances WHERE uid = @uid";
+			cmd.Parameters.AddWithValue("uid", uid);
+			await using (var reader = await cmd.ExecuteReaderAsync())
+				while (await reader.ReadAsync())
+				{
+					int newCoins = (int)reader["coins"] - 5;
+					cmd.CommandText = "UPDATE balances SET coins = @newCoins WHERE uid = @uid";
+					cmd.Parameters.AddWithValue("uid", uid);
+					cmd.Parameters.AddWithValue("newCoins", newCoins);
+					await using (var reader2 = await cmd.ExecuteReaderAsync())
+						while (await reader.ReadAsync())
+							return newCoins;
+				}
 			return 0;
 		}
 		internal static string GetStringSha256Hash(string text)
