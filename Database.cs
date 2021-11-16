@@ -159,11 +159,11 @@ namespace MTCG
 				while (await reader.ReadAsync())
 				{
 					int newCoins = (int)reader["coins"] - 5;
-					cmd.CommandText = "UPDATE balances SET coins = @newCoins WHERE uid = @uid";
-					cmd.Parameters.AddWithValue("uid", uid);
+					cmd.CommandText = $"UPDATE balances SET coins = @newCoins WHERE uid = @uid";
 					cmd.Parameters.AddWithValue("newCoins", newCoins);
+					cmd.Parameters.AddWithValue("uid", uid);
 					await using (var reader2 = await cmd.ExecuteReaderAsync())
-						while (await reader.ReadAsync())
+						while (await reader2.ReadAsync())
 							return newCoins;
 				}
 			return 0;
