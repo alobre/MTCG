@@ -50,7 +50,19 @@ namespace MTCG
                     Database db = new Database();
                     Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
                     var cmd = new Npgsql.NpgsqlCommand("", conn);
+                    //reduce coins by 5
                     var newCoins = await db.OpenPack(json.uid, cmd);
+                    //get random card id's (cid)
+                    var cardIdArray = await db.GetRandom(cmd);
+                    //assign cards to user
+                    db.AssignCardsToUser(json.uid, cardIdArray, cmd);
+                    //get cards by cid
+                    List<Card> CardList = new List<Card>();
+                    foreach (var cid in cardIdArray)
+                    {
+                        CardList.Add(await db.GetCardByCID(cid, cmd));
+                    }
+
                     return $"{{\"msg\": \"Pack purchase successful!\", \"success\": true, \"coins\": {newCoins}}}";
                 }
             }

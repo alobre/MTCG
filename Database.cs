@@ -151,23 +151,73 @@ namespace MTCG
 					return reader.GetInt32(0);
 			return 0;
 		}
-			public async Task<int> OpenPack(int uid, Npgsql.NpgsqlCommand cmd)
-		{
+		public async Task<int> GetCoinsByUID(int uid, Npgsql.NpgsqlCommand cmd)
+        {
 			cmd.CommandText = $"SELECT * FROM balances WHERE uid = @uid";
 			cmd.Parameters.AddWithValue("uid", uid);
 			await using (var reader = await cmd.ExecuteReaderAsync())
 				while (await reader.ReadAsync())
-				{
-					int newCoins = (int)reader["coins"] - 5;
-					cmd.CommandText = $"UPDATE balances SET coins = @newCoins WHERE uid = @uid";
-					cmd.Parameters.AddWithValue("newCoins", newCoins);
-					cmd.Parameters.AddWithValue("uid", uid);
-					await using (var reader2 = await cmd.ExecuteReaderAsync())
-						while (await reader2.ReadAsync())
-							return newCoins;
-				}
+					return (int)reader["coins"];
 			return 0;
 		}
+		public async Task<int> OpenPack(int uid, Npgsql.NpgsqlCommand cmd)
+		{
+			//reduce balance by 5
+			int newCoins = await GetCoinsByUID(uid, cmd) - 5;
+			cmd.CommandText = $"UPDATE balances SET coins = @newCoins WHERE uid = @uid";
+			cmd.Parameters.AddWithValue("newCoins", newCoins);
+			cmd.Parameters.AddWithValue("uid", uid);
+			cmd.ExecuteNonQuery();
+			return newCoins;
+		}
+		public async Task<int[]> GetRandom(Npgsql.NpgsqlCommand cmd)
+		{
+			cmd.CommandText = $"SELECT count(*) FROM card_pool";
+			int[] cardIdArray = new int[5];
+			await using (var reader = await cmd.ExecuteReaderAsync())
+				while (await reader.ReadAsync())
+                {
+					long totalCount = (long)reader["count"];
+                    for (int i = 0; i < cardIdArray.Length; i++)
+                    {
+						Random random = new Random();
+						cardIdArray[i] = random.Next(1, (int)totalCount);
+					}
+                }
+			return cardIdArray;
+		}
+		public async Task<Card> GetCardByCID(int cid, Npgsql.NpgsqlCommand cmd)
+		{
+			cmd.CommandText = $"SELECT cid, card_type, name, element, damage FROM card_pool WHERE cid = @cid";
+			cmd.Parameters.AddWithValue("cid", cid);
+			await using (var reader = await cmd.ExecuteReaderAsync())
+				while (await reader.ReadAsync())
+				{
+					Card card = new Card {
+						cid = (int)reader["cid"],
+						card_type = (string)reader["card_type"],
+						name = (string)reader["name"],
+						element = (string)reader["element"],
+						damage = (int)reader["damage"]
+					};
+					return card;
+                }
+			return new Card();
+		}
+		public async void AssignCardsToUser(int uid, int[] cardIdArray,Npgsql.NpgsqlCommand cmd)
+		{
+            for (int i = 0; i < cardIdArray.Length; i++)
+            {
+				int curr = cardIdArray[i];
+				cmd.CommandText = $"INSERT INTO collections(uid, cid) VALUES (@uid, @cid)";
+				cmd.Parameters.Clear();
+				cmd.Parameters.AddWithValue("uid", uid);
+				cmd.Parameters.AddWithValue("cid", curr);
+				var reader = await cmd.ExecuteNonQueryAsync();
+			}
+			
+		}
+
 		internal static string GetStringSha256Hash(string text)
 		{
 			if (String.IsNullOrEmpty(text))
