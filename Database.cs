@@ -218,6 +218,16 @@ namespace MTCG
 			
 		}
 
+		public async Task<List<Card>> CreateCardList(int[] cardIdArray, Npgsql.NpgsqlCommand cmd)
+		{
+			List<Card> CardList = new List<Card>();
+			foreach (int cid in cardIdArray)
+            {
+				CardList.Add(await GetCardByCID(cid, cmd));
+			}
+			return CardList;
+		}
+
 		internal static string GetStringSha256Hash(string text)
 		{
 			if (String.IsNullOrEmpty(text))

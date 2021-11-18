@@ -56,12 +56,9 @@ namespace MTCG
                     var cardIdArray = await db.GetRandom(cmd);
                     //assign cards to user
                     db.AssignCardsToUser(json.uid, cardIdArray, cmd);
-                    //get cards by cid
-                    List<Card> CardList = new List<Card>();
-                    foreach (var cid in cardIdArray)
-                    {
-                        CardList.Add(await db.GetCardByCID(cid, cmd));
-                    }
+                    //get CardList
+                    List<Card> CardList = await db.CreateCardList(cardIdArray, cmd);
+                    //string response = (Card)JsonSerializer.Deserialize<Card>(new Card()); // HIER
 
                     return $"{{\"msg\": \"Pack purchase successful!\", \"success\": true, \"coins\": {newCoins}}}";
                 }
