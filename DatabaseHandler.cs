@@ -58,9 +58,9 @@ namespace MTCG
                     db.AssignCardsToUser(json.uid, cardIdArray, cmd);
                     //get CardList
                     List<Card> CardList = await db.CreateCardList(cardIdArray, cmd);
-                    //string response = (Card)JsonSerializer.Deserialize<Card>(new Card()); // HIER
+                    string response = JsonSerializer.Serialize<List<Card>>(CardList); // HIER
 
-                    return $"{{\"msg\": \"Pack purchase successful!\", \"success\": true, \"coins\": {newCoins}}}";
+                    return $"{{\"msg\": \"Pack purchase successful!\", \"success\": true, \"coins\": {newCoins}, \"cards\": {response}}}";
                 }
             }
             return "{\"msg\": \"Pack purchase failed!\", \"success\": false}";

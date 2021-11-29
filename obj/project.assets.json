@@ -78,19 +78,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\alobre\\.nuget\\packages\\": {}
+    "C:\\Users\\wsowy\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\alobre\\Documents\\FH\\S03\\SEW\\MTCG\\MTCG.csproj",
+      "projectUniqueName": "C:\\Users\\wsowy\\Documents\\FH\\S03\\SEW\\MTCG\\MTCG.csproj",
       "projectName": "MTCG",
-      "projectPath": "C:\\Users\\alobre\\Documents\\FH\\S03\\SEW\\MTCG\\MTCG.csproj",
-      "packagesPath": "C:\\Users\\alobre\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\alobre\\Documents\\FH\\S03\\SEW\\MTCG\\obj\\",
+      "projectPath": "C:\\Users\\wsowy\\Documents\\FH\\S03\\SEW\\MTCG\\MTCG.csproj",
+      "packagesPath": "C:\\Users\\wsowy\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\wsowy\\Documents\\FH\\S03\\SEW\\MTCG\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\alobre\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\wsowy\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -136,7 +136,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.101\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.402\\RuntimeIdentifierGraph.json"
       }
     }
   }
