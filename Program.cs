@@ -137,6 +137,9 @@ namespace MTCG
                 case "/openPack":
                     response = await DatabaseHandler.OpenPack(username: body.username, password: body.password, access_token: body.access_token);
                     break;
+                case "/startBattle":
+                    response = await DatabaseHandler.StartBattle(username: body.username, password: body.password, access_token: body.access_token);
+                    break;
             }
             return response;
         }
@@ -152,7 +155,7 @@ namespace MTCG
             return response;
         }
 
-        static public void Register(string username = "", string password = "", string access_token = "")
+        /*static public void Register(string username = "", string password = "", string access_token = "")
         {
             try
             {
@@ -164,7 +167,7 @@ namespace MTCG
                 throw new Exception("Registrierung fehlerhaft");
             }
 
-        }
+        }*/
 
         /*static public void Login(string username = ", string password)
         {

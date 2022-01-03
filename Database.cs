@@ -264,6 +264,16 @@ namespace MTCG
 				}
 			return CardList;
 		}
+		public async void StartBattle(int uid, UserProfile user, Npgsql.NpgsqlCommand cmd)
+		{
+			cmd.CommandText = $"SELECT elo FROM elo WHERE uid = @uid";
+			cmd.Parameters.AddWithValue("uid", uid);
+			await using (var reader = await cmd.ExecuteReaderAsync())
+				while (await reader.ReadAsync())
+                {
+                    user.elo = (int)reader["elo"];
+                }
+		}
 
 		internal static string GetStringSha256Hash(string text)
 		{

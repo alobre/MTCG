@@ -87,6 +87,27 @@ namespace MTCG
             }
             return "{\"msg\": \"Collection call error\", \"success\": false}";
         }
+        public static async Task<string> StartBattle(string username = "", string password = "", string access_token = "")
+        {
+            if (username != null && password != null || access_token != null)
+            {
+                string loginResponse = await Login(username, password, access_token);
+                responseJson json = JsonSerializer.Deserialize<responseJson>(loginResponse);
+                if (json.success == true)
+                {
+                    Database db = new Database();
+                    Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
+                    var cmd = new Npgsql.NpgsqlCommand("", conn);
 
+                    User user = new User;
+
+                    db.StartBattle(json.uid, cmd);
+                    
+
+                    return $"{{\"msg\": \"Searching for Battle\", \"success\": true}}";
+                }
+            }
+            return "{\"msg\": \"Searching for Battle failed\", \"success\": false}";
+        }
     }
 }

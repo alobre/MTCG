@@ -17,7 +17,6 @@ namespace MTCG
         Stack User_Stack = new Stack();
         Deck User_deck = new Deck();
         public int coins { get; set; } = 20;
-
         public User(string username,string password)
         {
             if (Alle_User.Find(x => x.Usercredentials.username == username) == null)
