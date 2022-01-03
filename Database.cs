@@ -223,14 +223,35 @@ namespace MTCG
 		{
 			List<Card> CardList = new List<Card>();
 			cmd.CommandText = $"SELECT cid, card_type, name, element, damage FROM card_pool WHERE cid in (@1, @2, @3, @4, @5)";
-			cmd.Parameters.AddWithValue("1", cardIdArray[0]);
-			cmd.Parameters.AddWithValue("2", cardIdArray[1]);
-			cmd.Parameters.AddWithValue("3", cardIdArray[2]);
-			cmd.Parameters.AddWithValue("4", cardIdArray[3]);
-			cmd.Parameters.AddWithValue("5", cardIdArray[4]);
+
+			for(int i = 0; i < cardIdArray.Length; i++)
+            {
+				cmd.Parameters.AddWithValue($"{i+1}", cardIdArray[i]);
+			}
+
 			await using (var reader = await cmd.ExecuteReaderAsync())
 				while (await reader.ReadAsync())
                 {
+					Card card = new Card
+					{
+						cid = (int)reader["cid"],
+						card_type = (string)reader["card_type"],
+						name = (string)reader["name"],
+						element = (string)reader["element"],
+						damage = (int)reader["damage"]
+					};
+					CardList.Add(card);
+				}
+			return CardList;
+		}
+		public async Task<List<Card>> GetUsersCollection(int uid, Npgsql.NpgsqlCommand cmd)
+        {
+			List<Card> CardList = new List<Card>();
+			cmd.CommandText = $"SELECT cid, card_type, name, element, damage FROM card_pool WHERE cid in (SELECT cid FROM collections WHERE uid = @uid)";
+			cmd.Parameters.AddWithValue("uid", uid);
+			await using (var reader = await cmd.ExecuteReaderAsync())
+				while (await reader.ReadAsync())
+				{
 					Card card = new Card
 					{
 						cid = (int)reader["cid"],

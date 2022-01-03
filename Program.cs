@@ -97,6 +97,20 @@ namespace MTCG
                                         byte[] bytesToSend = System.Text.Encoding.ASCII.GetBytes(res);
                                         ns.Write(bytesToSend, 0, bytesToSend.Length);
                                         break;
+                                    case "get":
+                                        string GETresponse = await GET(query, jsonBody);
+                                        Console.WriteLine("Response: " + GETresponse);
+                                        string GETres =
+                                        @$"HTTP/1.1 200 OK
+                                        Last-Modified: 25.20.2021
+                                        Content-Length:
+                                        Content-Type: application/json
+                                        Connection: Closed
+
+                                        {GETresponse}";
+                                        byte[] bytesToSend_GET = System.Text.Encoding.ASCII.GetBytes(GETres);
+                                        ns.Write(bytesToSend_GET, 0, bytesToSend_GET.Length);
+                                        break;
                                 }
 
                             }
@@ -122,6 +136,17 @@ namespace MTCG
                     break;
                 case "/openPack":
                     response = await DatabaseHandler.OpenPack(username: body.username, password: body.password, access_token: body.access_token);
+                    break;
+            }
+            return response;
+        }
+        static public async Task<string> GET(string query, credentials body)
+        {
+            string response = "string.Empty";
+            switch (query)
+            {
+                case "/getCollection":
+                    response = await DatabaseHandler.ShowCollection(username: body.username, password: body.password, access_token: body.access_token);
                     break;
             }
             return response;

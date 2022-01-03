@@ -58,13 +58,34 @@ namespace MTCG
                     db.AssignCardsToUser(json.uid, cardIdArray, cmd);
                     //get CardList
                     List<Card> CardList = await db.CreateCardList(cardIdArray, cmd);
-                    string response = JsonSerializer.Serialize<List<Card>>(CardList); // HIER
+                    string response = JsonSerializer.Serialize<List<Card>>(CardList);
 
                     return $"{{\"msg\": \"Pack purchase successful!\", \"success\": true, \"coins\": {newCoins}, \"cards\": {response}}}";
                 }
             }
-            return "{\"msg\": \"Pack purchase failed!\", \"success\": false}";
-            
+            return "{\"msg\": \"Pack purchase failed!\", \"success\": false}";  
+        }
+        public static async Task<string> ShowCollection(string username = "", string password = "", string access_token = "")
+        {
+            if (username != null && password != null || access_token != null)
+            {
+                string loginResponse = await Login(username, password, access_token);
+                responseJson json = JsonSerializer.Deserialize<responseJson>(loginResponse);
+                if (json.success == true)
+                {
+                    Database db = new Database();
+                    Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
+                    var cmd = new Npgsql.NpgsqlCommand("", conn);
+
+                    //get CardList
+                    List<Card> CardList = await db.GetUsersCollection(json.uid, cmd);
+
+                    string response = JsonSerializer.Serialize<List<Card>>(CardList);
+
+                    return $"{{\"msg\": \"Successfully retrieved collection!\", \"success\": true, \"cards\": {response}}}";
+                }
+            }
+            return "{\"msg\": \"Collection call error\", \"success\": false}";
         }
 
     }
