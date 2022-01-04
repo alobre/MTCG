@@ -20,25 +20,25 @@ namespace MTCG
 		}
 		public async void Register(string username, string password, Npgsql.NpgsqlConnection conn)
 		{
-			var cmd = new NpgsqlCommand("",conn);
+			var cmd = new NpgsqlCommand("", conn);
 			int uid = await GetUIDByUsername(username, cmd);
 			if (uid == 0)
-            {
-					cmd.CommandText = $"INSERT INTO users(username, password) VALUES(@username, @password)";
-					cmd.Parameters.AddWithValue("username", username);
-					cmd.Parameters.AddWithValue("password", password);
+			{
+				cmd.CommandText = $"INSERT INTO users(username, password) VALUES(@username, @password)";
+				cmd.Parameters.AddWithValue("username", username);
+				cmd.Parameters.AddWithValue("password", password);
 				await cmd.ExecuteNonQueryAsync();
-					//test(cmd);
-					uid = await GetUIDByUsername(username, cmd);
-					SetUserBalance(uid, cmd);
-					SetAccessToken(uid, username, password, cmd);
-					//Console.WriteLine(await GetUserBalance(username, cmd));
-				
+				//test(cmd);
+				uid = await GetUIDByUsername(username, cmd);
+				SetUserBalance(uid, cmd);
+				SetAccessToken(uid, username, password, cmd);
+				//Console.WriteLine(await GetUserBalance(username, cmd));
+
 			}
-            else
-            {
-                Console.WriteLine("Username is already taken. Please choose a different username!");
-            }
+			else
+			{
+				Console.WriteLine("Username is already taken. Please choose a different username!");
+			}
 		}
 		public async Task<string> LoginByCredentials(string username, string password, Npgsql.NpgsqlConnection conn)
 		{
@@ -71,7 +71,7 @@ namespace MTCG
 			cmd.CommandText = $"SELECT u.uid, u.username, act.due_date FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE act.access_token = @access_token";
 			cmd.Parameters.AddWithValue("access_token", access_token);
 			await using (var reader = await cmd.ExecuteReaderAsync())
-			while (await reader.ReadAsync())
+				while (await reader.ReadAsync())
 				{
 					uid = (int)reader["uid"];
 					due_date = reader["due_date"].ToString();
@@ -85,9 +85,9 @@ namespace MTCG
 					}
 				}
 			return false;
-        }
+		}
 		public static async Task<string> GetAccessToken(string username, string password, Npgsql.NpgsqlCommand cmd)
-        {
+		{
 			cmd.CommandText = $"SELECT act.access_token FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE u.username == @username && u.password = @password";
 			cmd.Parameters.AddWithValue("username", username);
 			cmd.Parameters.AddWithValue("password", password);
@@ -118,7 +118,7 @@ namespace MTCG
 			return 0;
 		}
 		public async void SetUserBalance(int uid, Npgsql.NpgsqlCommand cmd)
-        {
+		{
 			cmd.CommandText = $"INSERT INTO balances(uid, coins) VALUES(@uid, 20)";
 			cmd.Parameters.AddWithValue("uid", uid);
 			await cmd.ExecuteNonQueryAsync();
@@ -152,7 +152,7 @@ namespace MTCG
 			return 0;
 		}
 		public async Task<int> GetCoinsByUID(int uid, Npgsql.NpgsqlCommand cmd)
-        {
+		{
 			cmd.CommandText = $"SELECT * FROM balances WHERE uid = @uid";
 			cmd.Parameters.AddWithValue("uid", uid);
 			await using (var reader = await cmd.ExecuteReaderAsync())
@@ -176,25 +176,26 @@ namespace MTCG
 			int[] cardIdArray = new int[5];
 			await using (var reader = await cmd.ExecuteReaderAsync())
 				while (await reader.ReadAsync())
-                {
+				{
 					long totalCount = (long)reader["count"];
-                    for (int i = 0; i < cardIdArray.Length; i++)
-                    {
+					for (int i = 0; i < cardIdArray.Length; i++)
+					{
 						Random random = new Random();
 						cardIdArray[i] = random.Next(1, (int)totalCount);
 					}
-                }
+				}
 			return cardIdArray;
 		}
 		public async Task<Card> GetCardByCID(int cid, Npgsql.NpgsqlCommand cmd)
 		{
-            Console.WriteLine(cid);
+			Console.WriteLine(cid);
 			cmd.CommandText = $"SELECT cid, card_type, name, element, damage FROM card_pool WHERE cid = @cid";
 			cmd.Parameters.AddWithValue("cid", cid);
 			await using (var reader = await cmd.ExecuteReaderAsync())
 				while (await reader.ReadAsync())
 				{
-					Card card = new Card {
+					Card card = new Card
+					{
 						cid = (int)reader["cid"],
 						card_type = (string)reader["card_type"],
 						name = (string)reader["name"],
@@ -202,13 +203,13 @@ namespace MTCG
 						damage = (int)reader["damage"]
 					};
 					return card;
-                }
+				}
 			return new Card();
 		}
-		public async void AssignCardsToUser(int uid, int[] cardIdArray,Npgsql.NpgsqlCommand cmd)
+		public async void AssignCardsToUser(int uid, int[] cardIdArray, Npgsql.NpgsqlCommand cmd)
 		{
-            for (int i = 0; i < cardIdArray.Length; i++)
-            {
+			for (int i = 0; i < cardIdArray.Length; i++)
+			{
 				int curr = cardIdArray[i];
 				cmd.CommandText = $"INSERT INTO collections(uid, cid) VALUES (@uid, @cid)";
 				cmd.Parameters.Clear();
@@ -216,7 +217,7 @@ namespace MTCG
 				cmd.Parameters.AddWithValue("cid", curr);
 				var reader = await cmd.ExecuteNonQueryAsync();
 			}
-			
+
 		}
 
 		public async Task<List<Card>> CreateCardList(int[] cardIdArray, Npgsql.NpgsqlCommand cmd)
@@ -224,14 +225,14 @@ namespace MTCG
 			List<Card> CardList = new List<Card>();
 			cmd.CommandText = $"SELECT cid, card_type, name, element, damage FROM card_pool WHERE cid in (@1, @2, @3, @4, @5)";
 
-			for(int i = 0; i < cardIdArray.Length; i++)
-            {
-				cmd.Parameters.AddWithValue($"{i+1}", cardIdArray[i]);
+			for (int i = 0; i < cardIdArray.Length; i++)
+			{
+				cmd.Parameters.AddWithValue($"{i + 1}", cardIdArray[i]);
 			}
 
 			await using (var reader = await cmd.ExecuteReaderAsync())
 				while (await reader.ReadAsync())
-                {
+				{
 					Card card = new Card
 					{
 						cid = (int)reader["cid"],
@@ -245,7 +246,7 @@ namespace MTCG
 			return CardList;
 		}
 		public async Task<List<Card>> GetUsersCollection(int uid, Npgsql.NpgsqlCommand cmd)
-        {
+		{
 			List<Card> CardList = new List<Card>();
 			cmd.CommandText = $"SELECT cid, card_type, name, element, damage FROM card_pool WHERE cid in (SELECT cid FROM collections WHERE uid = @uid)";
 			cmd.Parameters.AddWithValue("uid", uid);
@@ -264,15 +265,56 @@ namespace MTCG
 				}
 			return CardList;
 		}
+		public int[] SetDeck(int uid, int[] deck, Npgsql.NpgsqlCommand cmd)
+		{
+			return null;
+		}
+		public bool CheckIfUserOwnsCards(int uid, int[] deck, Npgsql.NpgsqlCommand cmd)
+		{
+			var dict = new Dictionary<int, int>();
+			foreach (var card in deck)
+			{
+				if (!dict.ContainsKey(card))
+				{
+					dict.Add(card, 0);
+				}
+				dict[card]++;
+			}
+			bool hasDouplicates;
+			if (dict.Count == 4)
+			{
+				hasDouplicates = false;
+			}
+			else
+			{
+				hasDouplicates = true;
+			}
+			return hasDouplicates;
+			/*
+			cmd.CommandText = $"SELECT cid FROM collections WHERE uid = @uid AND cid IN (@cid1, @cid2, @cid3, @cid4)";
+			cmd.Parameters.AddWithValue("uid", uid);
+			for (int i = 0; i < deck.Length; i++)
+			{
+				cmd.Parameters.AddWithValue($"cid{i + 1}", deck[i]);
+			}
+			*/
+
+		}
 		public async void StartBattle(int uid, UserProfile user, Npgsql.NpgsqlCommand cmd)
+		{
+			user = await CheckElo(uid, user, cmd);
+
+		}
+		public async Task<UserProfile> CheckElo(int uid, UserProfile user, Npgsql.NpgsqlCommand cmd)
 		{
 			cmd.CommandText = $"SELECT elo FROM elo WHERE uid = @uid";
 			cmd.Parameters.AddWithValue("uid", uid);
 			await using (var reader = await cmd.ExecuteReaderAsync())
 				while (await reader.ReadAsync())
-                {
-                    user.elo = (int)reader["elo"];
-                }
+				{
+					user.elo = (int)reader["elo"];
+				}
+			return user;
 		}
 
 		internal static string GetStringSha256Hash(string text)

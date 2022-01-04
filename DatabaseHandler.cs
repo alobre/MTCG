@@ -20,7 +20,7 @@ namespace MTCG
         {
             Database db = new Database();
             Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
-            if(access_token != null)
+            if (access_token != null)
             {
                 var cmd = new Npgsql.NpgsqlCommand("", conn);
                 bool isValid = await db.ValidateToken(access_token, cmd);
@@ -32,7 +32,8 @@ namespace MTCG
                 {
                     return "{\"msg\": \"access_token not valid! Please Login again!\", \"success\": false}";
                 }
-            } else if(username != null && password != null )
+            }
+            else if (username != null && password != null)
             {
                 string response = await db.LoginByCredentials(username, password, conn);
                 return response;
@@ -41,11 +42,11 @@ namespace MTCG
         }
         public static async Task<string> OpenPack(string username = "", string password = "", string access_token = "")
         {
-            if(username != null && password !=null || access_token != null)
+            if (username != null && password != null || access_token != null)
             {
                 string loginResponse = await Login(username, password, access_token);
                 responseJson json = JsonSerializer.Deserialize<responseJson>(loginResponse);
-                if(json.success == true)
+                if (json.success == true)
                 {
                     Database db = new Database();
                     Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
@@ -63,7 +64,7 @@ namespace MTCG
                     return $"{{\"msg\": \"Pack purchase successful!\", \"success\": true, \"coins\": {newCoins}, \"cards\": {response}}}";
                 }
             }
-            return "{\"msg\": \"Pack purchase failed!\", \"success\": false}";  
+            return "{\"msg\": \"Pack purchase failed!\", \"success\": false}";
         }
         public static async Task<string> ShowCollection(string username = "", string password = "", string access_token = "")
         {
@@ -99,10 +100,10 @@ namespace MTCG
                     Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
                     var cmd = new Npgsql.NpgsqlCommand("", conn);
 
-                    User user = new User;
+                    UserProfile user = new UserProfile();
 
-                    db.StartBattle(json.uid, cmd);
-                    
+                    db.StartBattle(json.uid, user, cmd);
+
 
                     return $"{{\"msg\": \"Searching for Battle\", \"success\": true}}";
                 }
