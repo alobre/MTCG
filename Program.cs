@@ -20,11 +20,7 @@ namespace MTCG
 
         static void Main(string[] args)
         {
-
-
             Server().Wait();
-            //Console.ReadKey();
-
         }
 
         public static async Task Server()

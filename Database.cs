@@ -8,7 +8,7 @@ using Npgsql;
 
 namespace MTCG
 {
-	class Database
+	public class Database
 	{
 		public async Task<Npgsql.NpgsqlConnection> ConnectDB(string server, string username, string password, string database)
 		{
@@ -265,11 +265,28 @@ namespace MTCG
 				}
 			return CardList;
 		}
-		public int[] SetDeck(int uid, int[] deck, Npgsql.NpgsqlCommand cmd)
+		public async Task<int[]> SetDeck(int uid, int[] deck, Npgsql.NpgsqlCommand cmd)
 		{
-			return null;
+			if(CheckIfCountainsDuplicates(deck) == false)
+            {
+				bool DoesUserOwnCards = await CheckIfUserOwnsCards(uid, deck, cmd);
+				if (DoesUserOwnCards == true)
+                {
+					return deck;
+                }
+                else
+                {
+					int[] emptyArray = new int[0];
+					return emptyArray;
+				}
+            }
+            else
+            {
+				int[] emptyArray = new int[0];
+				return emptyArray;
+            }
 		}
-		public bool CheckIfUserOwnsCards(int uid, int[] deck, Npgsql.NpgsqlCommand cmd)
+		public bool CheckIfCountainsDuplicates(int[] deck)
 		{
 			var dict = new Dictionary<int, int>();
 			foreach (var card in deck)
@@ -299,6 +316,33 @@ namespace MTCG
 			}
 			*/
 
+		}
+		public async Task<bool> CheckIfUserOwnsCards(int uid, int[] deck, Npgsql.NpgsqlCommand cmd)
+        {
+			cmd.CommandText = $"SELECT cid FROM collections WHERE uid = @uid AND cid IN (@cid1, @cid2, @cid3, @cid4)";
+			cmd.Parameters.AddWithValue("uid", uid);
+			for (int i = 0; i < deck.Length; i++)
+			{
+				cmd.Parameters.AddWithValue($"cid{i + 1}", deck[i]);
+			}
+			bool UserOwnsCard = true;
+
+			var dict = new Dictionary<int, int>();
+			await using (var reader = await cmd.ExecuteReaderAsync())
+				while (await reader.ReadAsync())
+                {
+					int card = (int)reader["cid"];
+					if (!dict.ContainsKey(card))
+					{
+						dict.Add(card, 0);
+					}
+					dict[card]++;
+                }
+            foreach (var card in deck)
+            {
+				if (dict.ContainsKey(card) == false) UserOwnsCard = false;
+            }
+			return UserOwnsCard;
 		}
 		public async void StartBattle(int uid, UserProfile user, Npgsql.NpgsqlCommand cmd)
 		{
