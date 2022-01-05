@@ -88,6 +88,27 @@ namespace MTCG
             }
             return "{\"msg\": \"Collection call error\", \"success\": false}";
         }
+        public static async Task<string> SetDeck(int[] deck, string username = "", string password = "", string access_token = "")
+        {
+            if (username != null && password != null || access_token != null)
+            {
+                string loginResponse = await Login(username, password, access_token);
+                responseJson json = JsonSerializer.Deserialize<responseJson>(loginResponse);
+                if (json.success == true)
+                {
+                    Database db = new Database();
+                    Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
+                    var cmd = new Npgsql.NpgsqlCommand("", conn);
+
+                    UserProfile user = new UserProfile();
+                    user.deck = deck;
+                    int[] confirmedDeck = await db.SetDeck(json.uid, user, cmd);
+
+                    return $"{{\"msg\": \"Successfully Updated Deck\", \"success\": true, \"deck\": {confirmedDeck.ToString()}}}";
+                }
+            }
+            return $"{{\"msg\": \"Updating deck failed make sure you own the cards and don't have any duplicates.\", \"success\": false, \"deck\": []}}";
+        }
         public static async Task<string> StartBattle(string username = "", string password = "", string access_token = "")
         {
             if (username != null && password != null || access_token != null)
@@ -101,6 +122,8 @@ namespace MTCG
                     var cmd = new Npgsql.NpgsqlCommand("", conn);
 
                     UserProfile user = new UserProfile();
+
+                    //user.deck = db.SetDeck(json.uid, user, cmd);
 
                     db.StartBattle(json.uid, user, cmd);
 

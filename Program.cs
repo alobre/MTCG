@@ -49,6 +49,7 @@ namespace MTCG
                                 string requestType, query;
                                 string jsonString = "";
                                 credentials jsonBody;
+                                Body requestBody;
                                 using (StringReader reader = new StringReader(request))
                                 {
 
@@ -74,13 +75,14 @@ namespace MTCG
                                     Console.WriteLine(body);
                                     Console.WriteLine(jsonString);
                                     jsonBody = JsonSerializer.Deserialize<credentials>(jsonString);
+                                    requestBody = JsonSerializer.Deserialize<Body>(jsonString);
                                     Console.WriteLine(jsonBody.access_token);
                                 }
 
                                 switch (requestType.ToLower())
                                 {
                                     case "post":
-                                        string response = await POST(query, jsonBody);
+                                        string response = await POST(query, jsonBody, requestBody.deck);
                                         Console.WriteLine("Response: " + response);
                                         string res = 
                                         @$"HTTP/1.1 200 OK
@@ -119,7 +121,7 @@ namespace MTCG
             }
         }
 
-        static public async Task<string> POST(string query, credentials body)
+        static public async Task<string> POST(string query, credentials body, int[] deck = null)
         {
             string response = "string.Empty";
             switch (query)
@@ -132,6 +134,9 @@ namespace MTCG
                     break;
                 case "/openPack":
                     response = await DatabaseHandler.OpenPack(username: body.username, password: body.password, access_token: body.access_token);
+                    break;
+                case "/setDeck":
+                    response = await DatabaseHandler.SetDeck(deck, username: body.username, password: body.password, access_token: body.access_token);
                     break;
                 case "/startBattle":
                     response = await DatabaseHandler.StartBattle(username: body.username, password: body.password, access_token: body.access_token);

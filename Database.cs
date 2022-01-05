@@ -265,14 +265,72 @@ namespace MTCG
 				}
 			return CardList;
 		}
-		public async Task<int[]> SetDeck(int uid, int[] deck, Npgsql.NpgsqlCommand cmd)
+		public async Task<UserProfile> GetUserProfile(int uid, Npgsql.NpgsqlCommand cmd)
+        {
+			UserProfile user = new UserProfile();
+			cmd.CommandText = "SELECT * FROM user_profile WHERE uid = @uid";
+			cmd.Parameters.AddWithValue("uid", uid);
+			await using (var reader = await cmd.ExecuteReaderAsync())
+				while (await reader.ReadAsync())
+                {
+					user.uid = (int)reader["uid"];
+					user.elo = (int)reader["elo"];
+					user.deck = (int[])reader["deck"];
+					user.wins = (int)reader["wins"];
+					user.losses = (int)reader["losses"];
+					user.draw = (int)reader["draw"];
+				}
+			return user;
+
+		}
+		public async void SyncUserProfile(UserProfile user, Npgsql.NpgsqlCommand cmd)
 		{
-			if(CheckIfCountainsDuplicates(deck) == false)
+			cmd.CommandText = "UPDATE user_profile SET elo = @elo, deck = ARRAY[@cid1,@cid2,@cid3,@cid4], wins = @wins, losses = @losses, draw = @draw WHERE uid = @uid";
+			cmd.Parameters.AddWithValue("elo", user.elo); // ELO
+			for (int i = 0; i < user.deck.Length; i++) // DECK FOR LOOP
+			{
+				cmd.Parameters.AddWithValue($"cid{i + 1}", user.deck[i]);
+			}
+			cmd.Parameters.AddWithValue("wins", user.wins); // WINS
+			cmd.Parameters.AddWithValue("losses", user.losses); // LOSSES
+			cmd.Parameters.AddWithValue("draw", user.draw); // DRAW
+			await cmd.ExecuteNonQueryAsync();
+		}
+
+		public async Task<string> CheckAndCreateUserProfile(int uid, Npgsql.NpgsqlCommand cmd)
+        {
+			cmd.CommandText = "SELECT uid FROM user_profile WHERE uid = @uid";
+			cmd.Parameters.AddWithValue("uid", uid);
+			bool UserProfileUidExists = false;
+			await using (var reader = await cmd.ExecuteReaderAsync())
+				while (await reader.ReadAsync())
+                {
+					if ((int)reader["uid"] == uid) UserProfileUidExists = true;
+                }
+			if (UserProfileUidExists == true) return "User Profile already Exists";
+            else
             {
-				bool DoesUserOwnCards = await CheckIfUserOwnsCards(uid, deck, cmd);
+				cmd.CommandText = "INSERT INTO user_profile (uid, elo, wins, losses, draw) VALUES (@uid, 100, 0,0,0)";
+				await cmd.ExecuteNonQueryAsync();
+				return "User Profile did not exist before and was created";
+            }
+
+		}
+		public async Task<int[]> SetDeck(int uid, UserProfile user, Npgsql.NpgsqlCommand cmd)
+		{
+			if(CheckIfCountainsDuplicates(user.deck) == false)
+            {
+				bool DoesUserOwnCards = await CheckIfUserOwnsCards(uid, user.deck, cmd);
 				if (DoesUserOwnCards == true)
                 {
-					return deck;
+					cmd.CommandText = "UPDATE user_profile SET deck = ARRAY[@cid1,@cid2,@cid3,@cid4] WHERE uid = @uid";
+					cmd.Parameters.AddWithValue("uid", uid);
+					for (int i = 0; i < user.deck.Length; i++)
+					{
+						cmd.Parameters.AddWithValue($"cid{i + 1}", user.deck[i]);
+					}
+					await cmd.ExecuteNonQueryAsync();
+					return user.deck;
                 }
                 else
                 {
@@ -307,15 +365,6 @@ namespace MTCG
 				hasDouplicates = true;
 			}
 			return hasDouplicates;
-			/*
-			cmd.CommandText = $"SELECT cid FROM collections WHERE uid = @uid AND cid IN (@cid1, @cid2, @cid3, @cid4)";
-			cmd.Parameters.AddWithValue("uid", uid);
-			for (int i = 0; i < deck.Length; i++)
-			{
-				cmd.Parameters.AddWithValue($"cid{i + 1}", deck[i]);
-			}
-			*/
-
 		}
 		public async Task<bool> CheckIfUserOwnsCards(int uid, int[] deck, Npgsql.NpgsqlCommand cmd)
         {
@@ -344,23 +393,31 @@ namespace MTCG
             }
 			return UserOwnsCard;
 		}
-		public async void StartBattle(int uid, UserProfile user, Npgsql.NpgsqlCommand cmd)
+		public async void StartBattle(UserProfile user, Npgsql.NpgsqlCommand cmd)
 		{
-			user = await CheckElo(uid, user, cmd);
-
+			Queue Q = AddUserToQueue(user); // ADD USER TO QUEUE
+			
 		}
-		public async Task<UserProfile> CheckElo(int uid, UserProfile user, Npgsql.NpgsqlCommand cmd)
+		public Queue AddUserToQueue(UserProfile user)
+        {
+			Queue Q = new Queue();
+			Q.UsersInQueue.Add(user);
+			return Q;
+		}
+		public Queue CheckForOpponment(Queue Q)
 		{
-			cmd.CommandText = $"SELECT elo FROM elo WHERE uid = @uid";
-			cmd.Parameters.AddWithValue("uid", uid);
-			await using (var reader = await cmd.ExecuteReaderAsync())
-				while (await reader.ReadAsync())
-				{
-					user.elo = (int)reader["elo"];
-				}
-			return user;
+			if(Q.UsersInQueue.Count > 2)
+            {
+				/*
+				for(int i = 0; i < Q.UsersInQueue.Count; i++)
+                {
+					Q.UsersInQueue[i].elo
+                }
+				*/
+				
+            }
+			return null;
 		}
-
 		internal static string GetStringSha256Hash(string text)
 		{
 			if (String.IsNullOrEmpty(text))
