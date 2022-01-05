@@ -142,6 +142,7 @@ namespace MTCG
                     response = await DatabaseHandler.StartBattle(username: body.username, password: body.password, access_token: body.access_token);
                     break;
             }
+            //query != "/startBattle") 
             return response;
         }
         static public async Task<string> GET(string query, credentials body)

@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace MTCG
 {
-  public class Spell: cards
+    public class Match
     {
-
+        public UserProfile user1;
+        public UserProfile user2;
     }
 }

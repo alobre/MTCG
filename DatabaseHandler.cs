@@ -120,12 +120,12 @@ namespace MTCG
                     Database db = new Database();
                     Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
                     var cmd = new Npgsql.NpgsqlCommand("", conn);
+                    
+                    //STEP 1: GET USER PROFILE
+                    UserProfile user = await db.GetUserProfile(json.uid, cmd);
 
-                    UserProfile user = new UserProfile();
-
-                    //user.deck = db.SetDeck(json.uid, user, cmd);
-
-                    db.StartBattle(json.uid, user, cmd);
+                    //STEP 2: QUEUE
+                    db.StartBattle(user, cmd);
 
 
                     return $"{{\"msg\": \"Searching for Battle\", \"success\": true}}";

@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 
 namespace MTCG
 {
-    public class Figures
+    public class Battle
     {
-        public int size { get; private set; }
-        public Figures(int size)
+        public Match StartMatch(Match match)
         {
-            this.size = size;
+            match.user1.draw++;
+            match.user2.draw++;
+            return match;
         }
     }
 }

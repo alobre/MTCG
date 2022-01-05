@@ -8,6 +8,6 @@ namespace MTCG
 {
     public class Queue
     {
-        public List<UserProfile> UsersInQueue = new List<UserProfile>();
+        public static List<UserProfile> UsersInQueue = new List<UserProfile>();
     }
 }
