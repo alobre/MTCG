@@ -9,6 +9,7 @@ namespace MTCG
     public class UserProfile
     {
         public int uid { get; set; } = 0;
+        public string username { get; set; }
         public int elo { get; set; } = 100;
         public int[] deck { get; set; } = new int[4];
         public int wins { get; set; } = 0;

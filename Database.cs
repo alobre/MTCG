@@ -10,7 +10,7 @@ namespace MTCG
 {
     public class Database
     {
-        static object commandlock;
+        static object commandlock = new object();
         public async Task<Npgsql.NpgsqlConnection> ConnectDB(string server, string username, string password, string database)
         {
             var connString = $"Host={server};Username={username};Password={password};Database={database}";
@@ -281,12 +281,14 @@ namespace MTCG
         public async Task<UserProfile> GetUserProfile(int uid, Npgsql.NpgsqlCommand cmd)
         {
             UserProfile user = new UserProfile();
-            cmd.CommandText = "SELECT * FROM user_profile WHERE uid = @uid";
+            cmd.CommandText = "SELECT user_profile.uid, user_profile.elo, user_profile.deck, user_profile.wins, user_profile.losses, user_profile.draw, users.username  FROM user_profile JOIN users ON user_profile.uid = users.uid WHERE user_profile.uid = @uid";
             cmd.Parameters.AddWithValue("uid", uid);
             await using (var reader = await cmd.ExecuteReaderAsync())
                 while (await reader.ReadAsync())
                 {
+
                     user.uid = (int)reader["uid"];
+                    user.username = (string)reader["username"];
                     user.elo = (int)reader["elo"];
                     user.deck = (int[])reader["deck"];
                     user.wins = (int)reader["wins"];
@@ -420,11 +422,11 @@ namespace MTCG
         }
         public async void StartBattle(UserProfile user, Npgsql.NpgsqlCommand cmd)
         {
-            //Queue Q = AddUserToQueue(user); // ADD USER TO QUEUE
+            // ADD USER TO QUEUE
             AddUserToQueue(user);
             if (Queue.UsersInQueue.Count >= 2)
             {
-                Match match_results = CheckForOpponment();
+                Match match_results = await CheckForOpponment(cmd);
                 SyncUserProfile(match_results.user1, cmd);
                 SyncUserProfile(match_results.user2, cmd);
             }
@@ -432,11 +434,9 @@ namespace MTCG
         }
         public void AddUserToQueue(UserProfile user)
         {
-            //Queue Q = new Queue();
-            //Q.UsersInQueue.Add(user);
             Queue.UsersInQueue.Add(user);
         }
-        public Match CheckForOpponment()
+        public async Task<Match> CheckForOpponment(Npgsql.NpgsqlCommand cmd)
         {
             if (Queue.UsersInQueue.Count >= 2)
             {
@@ -450,7 +450,7 @@ namespace MTCG
                 Match match = new Match(); // ADD USERS TO MATCH
                 match.user1 = Queue.UsersInQueue[0];
                 match.user2 = Queue.UsersInQueue[1];
-                Match match_results = battle.StartMatch(match); // START BATTLE
+                Match match_results = await battle.StartMatch(match); // START BATTLE
                 return match_results;
             }
             else return null;
