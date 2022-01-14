@@ -38,46 +38,71 @@ namespace MTCG
             // START BATTLE
             int round = 1;
             bool match_running = true;
+            ConsoleColor[] colors = (ConsoleColor[])ConsoleColor.GetValues(typeof(ConsoleColor));
+
             while (match_running)
             {
                 if (round < 100)
                 {
+                    Console.ForegroundColor = colors[14]; // YELLOW
                     Console.WriteLine($"ROUND #{round}");
-                    Console.WriteLine($"{d1.DeckCards[0].name} WITH {d1.DeckCards[0].damage} DAMAGE VS {d2.DeckCards[0].name} WITH {d2.DeckCards[0].damage} DAMAGE");
+                    Console.ForegroundColor = colors[15]; // WHITE
+
+                    // Console.WriteLine($"{d1.DeckCards[0].name} WITH {d1.DeckCards[0].damage} DAMAGE VS {d2.DeckCards[0].name} WITH {d2.DeckCards[0].damage} DAMAGE");
                     // IN CASE OF DRAW: REMOVE BOTH CARDS FROM PLAY
                     if (d1.DeckCards[0].damage == d2.DeckCards[0].damage)
                     {
+                        Console.ForegroundColor = colors[6]; // DARKGREEN
                         Console.WriteLine($"{d2.DeckCards[0].name} WITH {d2.DeckCards[0].damage} DAMAGE EQUALS {d1.DeckCards[0].name} WITH {d1.DeckCards[0].damage} DAMAGE");
                         Console.WriteLine("THIS TURN IS A DRAW!");
+                        Console.ForegroundColor = colors[15];// WHITE
+
                         d1.DeckCards.RemoveAt(0);
                         d2.DeckCards.RemoveAt(0);
+
+                        Console.ForegroundColor = colors[8]; // DARKGREY
                         Console.WriteLine($"{match.user1.username} HAS {d1.DeckCards.Count} CARDS LEFT");
                         Console.WriteLine($"{match.user2.username} HAS {d2.DeckCards.Count} CARDS LEFT");
+                        Console.ForegroundColor = colors[15]; // WHITE
                     }
                     // IN CASE OF USER1 CARD WINS: ADD DEFEATED CARD TO DECK1 AND REMOVE IT FROM DECK2
                     if (d1.DeckCards[0].damage > d2.DeckCards[0].damage)
                     {
+                        Console.ForegroundColor = colors[2]; // DARKGREEN
                         Console.WriteLine($"{d1.DeckCards[0].name} WITH {d1.DeckCards[0].damage} DAMAGE DEFEATS {d2.DeckCards[0].name} WITH {d2.DeckCards[0].damage} DAMAGE");
                         Console.WriteLine($"{match.user1.username} WINS THIS TURN!");
+                        Console.ForegroundColor = colors[15]; // WHITE
                         d1.DeckCards.Add(d2.DeckCards[0]);
                         d2.DeckCards.RemoveAt(0);
+
+                        Console.ForegroundColor = colors[8]; // DARKGREY
                         Console.WriteLine($"{match.user1.username} HAS {d1.DeckCards.Count} CARDS LEFT");
                         Console.WriteLine($"{match.user2.username} HAS {d2.DeckCards.Count} CARDS LEFT");
+                        Console.ForegroundColor = colors[15]; // WHITE
                     }
                     // IN CASE OF USER2 CARD WINS: ADD DEFEATED CARD TO DECK2 AND REMOVE IT FROM DECK1
                     if (d1.DeckCards[0].damage < d2.DeckCards[0].damage)
                     {
+                        Console.ForegroundColor = colors[2]; // DARKGREEN
                         Console.WriteLine($"{d2.DeckCards[0].name} WITH {d2.DeckCards[0].damage} DAMAGE DEFEATS {d1.DeckCards[0].name} WITH {d1.DeckCards[0].damage} DAMAGE");
                         Console.WriteLine($"{match.user2.username} WINS THIS TURN!");
+                        Console.ForegroundColor = colors[15]; // WHITE
+
                         d2.DeckCards.Add(d1.DeckCards[0]);
                         d1.DeckCards.RemoveAt(0);
+
+                        Console.ForegroundColor = colors[8]; // DARKGREY
                         Console.WriteLine($"{match.user1.username} HAS {d1.DeckCards.Count} CARDS LEFT");
                         Console.WriteLine($"{match.user2.username} HAS {d2.DeckCards.Count} CARDS LEFT");
+                        Console.ForegroundColor = colors[15]; // WHITE
                     }
                     // IF D1 HAS NO CARDS: USER2 WINS
                     if (d1.DeckCards.Count == 0 && d2.DeckCards.Count > 0)
                     {
+                        Console.ForegroundColor = colors[10]; // GREEN
                         Console.WriteLine($"{match.user2.username} WINS THIS GAME IN {round} ROUNDS. GGCHEN!");
+                        Console.ForegroundColor = colors[15]; // WHITE
+
                         match.user2.wins++;
                         match.user1.losses++;
                         match_running = false;
@@ -85,9 +110,21 @@ namespace MTCG
                     // IF D2 HAS NO CARDS: USER1 WINS
                     if (d2.DeckCards.Count == 0 && d1.DeckCards.Count > 0)
                     {
+                        Console.ForegroundColor = colors[10]; // GREEN
                         Console.WriteLine($"{match.user1.username} WINS THIS GAME IN {round} ROUNDS. GGCHEN!");
+                        Console.ForegroundColor = colors[15]; // WHITE
                         match.user1.wins++;
                         match.user2.losses++;
+                        match_running = false;
+                    }
+                    // IF BOTH DECKS HAVE NO CARDS
+                    if (d1.DeckCards.Count == 0 && d2.DeckCards.Count == 0)
+                    {
+                        Console.ForegroundColor = colors[10]; // GREEN
+                        Console.WriteLine($"{match.user1.username} AND {match.user2.username} HAVE NO CARDS LEFT. THIS GAME IS A DRAW. GGCHEN!");
+                        Console.ForegroundColor = colors[15]; // WHITE
+                        match.user1.draw++;
+                        match.user2.draw++;
                         match_running = false;
                     }
                     round++;
