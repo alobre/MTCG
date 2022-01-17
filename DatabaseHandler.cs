@@ -9,12 +9,13 @@ namespace MTCG
 {
     class DatabaseHandler
     {
-        public static async void Register(string username, string password)
+        public static async Task<string> Register(string username, string password)
         {
             Database db = new Database();
             Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
             db.Register(username, password, conn);
             //conn.Close();
+            return "{\"msg\": \"Login successful!\", \"success\": true}";
         }
         public static async Task<string> Login(string username = "", string password = "", string access_token = "")
         {
@@ -120,7 +121,7 @@ namespace MTCG
                     Database db = new Database();
                     Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
                     var cmd = new Npgsql.NpgsqlCommand("", conn);
-                    
+
                     //STEP 1: GET USER PROFILE
                     UserProfile user = await db.GetUserProfile(json.uid, cmd);
 
@@ -132,6 +133,31 @@ namespace MTCG
                 }
             }
             return "{\"msg\": \"Searching for Battle failed\", \"success\": false}";
+        }
+        public static async Task<string> Tradeoffer(int recipient_uid, int[] i_receive, int[] u_receive, string status, string action, string username = "", string password = "", string access_token = "")
+        {
+            if (username != null && password != null || access_token != null)
+            {
+                string loginResponse = await Login(username, password, access_token);
+                responseJson json = JsonSerializer.Deserialize<responseJson>(loginResponse);
+                if (json.success == true)
+                {
+                    Database db = new Database();
+                    Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
+                    var cmd = new Npgsql.NpgsqlCommand("", conn);
+                    switch (action)
+                    {
+                        case "accept":
+                            break;
+                        case "decline":
+                            break;
+                        case "create":
+                            
+                            break;
+                    }
+                }
+            }
+
         }
     }
 }

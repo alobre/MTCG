@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Npgsql;
 
@@ -25,12 +26,19 @@ namespace MTCG
             int uid = await GetUIDByUsername(username, cmd);
             if (uid == 0)
             {
-                cmd.CommandText = $"INSERT INTO users(username, password) VALUES(@username, @password)";
-                cmd.Parameters.AddWithValue("username", username);
-                cmd.Parameters.AddWithValue("password", password);
-                await cmd.ExecuteNonQueryAsync();
-                //test(cmd);
-                uid = await GetUIDByUsername(username, cmd);
+                lock (commandlock)
+                {
+                    cmd.CommandText = $"INSERT INTO users(username, password) VALUES(@username, @password)";
+                    cmd.Parameters.AddWithValue("username", username);
+                    cmd.Parameters.AddWithValue("password", password);
+                    cmd.Prepare();
+                    cmd.ExecuteNonQueryAsync();
+                }
+                //Thread.Sleep(10);
+                lock (commandlock)
+                {
+                    uid = GetUIDByUsername(username, cmd).Result;
+                }
                 SetUserBalance(uid, cmd);
                 SetAccessToken(uid, username, password, cmd);
                 //Console.WriteLine(await GetUserBalance(username, cmd));
@@ -44,21 +52,16 @@ namespace MTCG
         {
             int uid;
             string access_token, due_date;
-            bool isValid;
             var cmd = new NpgsqlCommand($"SELECT u.uid, u.username, act.access_token, act.due_date FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE u.username = @username AND u.password = @password", conn);
             cmd.Parameters.AddWithValue("username", username);
             cmd.Parameters.AddWithValue("password", password);
+            cmd.Prepare();
             await using (var reader = await cmd.ExecuteReaderAsync())
                 while (await reader.ReadAsync())
                 {
                     uid = (int)reader["uid"];
                     access_token = (string)reader["access_token"];
                     due_date = reader["due_date"].ToString();
-                    /*isValid = await ValidateToken(access_token, cmd);
-					if (isValid == true)
-					{
-						return $"{{msg:\"Login successful!\", uid: {uid}, access_token: \"{access_token}\"}}";
-					}*/
                     return $"{{\"msg\":\"Login successful!\", \"uid\": {uid}, \"access_token\": \"{access_token}\", \"success\": true}}";
                 }
             return $"{{\"msg\":\"Login failed. Please check your credentials.\", \"success\": false}}";
@@ -70,6 +73,7 @@ namespace MTCG
             int uid;
             cmd.CommandText = $"SELECT u.uid, u.username, act.due_date FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE act.access_token = @access_token";
             cmd.Parameters.AddWithValue("access_token", access_token);
+            cmd.Prepare();
             await using (var reader = await cmd.ExecuteReaderAsync())
                 while (await reader.ReadAsync())
                 {
@@ -91,6 +95,7 @@ namespace MTCG
             cmd.CommandText = $"SELECT act.access_token FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE u.username == @username && u.password = @password";
             cmd.Parameters.AddWithValue("username", username);
             cmd.Parameters.AddWithValue("password", password);
+            cmd.Prepare();
             await using (var reader = await cmd.ExecuteReaderAsync())
                 while (await reader.ReadAsync())
                 {
@@ -112,9 +117,26 @@ namespace MTCG
         {
             cmd.CommandText = $"SELECT uid FROM users WHERE username = @username";
             cmd.Parameters.AddWithValue("username", username);
+            cmd.Prepare();
             await using (var reader = await cmd.ExecuteReaderAsync())
-                while (await reader.ReadAsync())
-                    return reader.GetInt32(0);
+            {
+                try
+                {
+                    while (await reader.ReadAsync())
+                        return reader.GetInt32(0);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    throw;
+                }
+                finally
+                {
+                    reader.Close();
+                }
+                
+            }
+                
             return 0;
         }
         public void SetUserBalance(int uid, Npgsql.NpgsqlCommand cmd)
@@ -123,6 +145,7 @@ namespace MTCG
             {
                 cmd.CommandText = $"INSERT INTO balances(uid, coins) VALUES(@uid, 20)";
                 cmd.Parameters.AddWithValue("uid", uid);
+                cmd.Prepare();
                 cmd.ExecuteNonQueryAsync();
             }
         }
@@ -131,6 +154,7 @@ namespace MTCG
             int uid = await GetUIDByUsername(username, cmd);
             cmd.CommandText = $"SELECT coins FROM balances WHERE uid = '(@uid)'";
             cmd.Parameters.AddWithValue("uid", uid);
+            cmd.Prepare();
             await using (var reader = await cmd.ExecuteReaderAsync())
                 while (await reader.ReadAsync())
                     return reader.GetInt32(0);
@@ -144,6 +168,7 @@ namespace MTCG
                 cmd.CommandText = $"INSERT INTO access_tokens(uid, access_token, due_date) VALUES(@uid, @hash, '2022-01-01')";
                 cmd.Parameters.AddWithValue("uid", uid);
                 cmd.Parameters.AddWithValue("hash", hash);
+                cmd.Prepare();
                 cmd.ExecuteNonQuery();
             }
         }
@@ -152,6 +177,7 @@ namespace MTCG
             int uid = await GetUIDByUsername(username, cmd);
             cmd.CommandText = $"SELECT coins FROM balances WHERE uid = @uid";
             cmd.Parameters.AddWithValue("uid", uid);
+            cmd.Prepare();
             await using (var reader = await cmd.ExecuteReaderAsync())
                 while (await reader.ReadAsync())
                     return reader.GetInt32(0);
@@ -161,6 +187,7 @@ namespace MTCG
         {
             cmd.CommandText = $"SELECT * FROM balances WHERE uid = @uid";
             cmd.Parameters.AddWithValue("uid", uid);
+            cmd.Prepare();
             await using (var reader = await cmd.ExecuteReaderAsync())
                 while (await reader.ReadAsync())
                     return (int)reader["coins"];
@@ -175,6 +202,7 @@ namespace MTCG
                 cmd.CommandText = $"UPDATE balances SET coins = @newCoins WHERE uid = @uid";
                 cmd.Parameters.AddWithValue("newCoins", newCoins);
                 cmd.Parameters.AddWithValue("uid", uid);
+                cmd.Prepare();
                 cmd.ExecuteNonQuery();
                 return newCoins;
             }
@@ -184,6 +212,7 @@ namespace MTCG
         {
             cmd.CommandText = $"SELECT count(*) FROM card_pool";
             int[] cardIdArray = new int[5];
+            cmd.Prepare();
             await using (var reader = await cmd.ExecuteReaderAsync())
                 while (await reader.ReadAsync())
                 {
@@ -201,6 +230,7 @@ namespace MTCG
             Console.WriteLine(cid);
             cmd.CommandText = $"SELECT cid, card_type, name, element, damage FROM card_pool WHERE cid = @cid";
             cmd.Parameters.AddWithValue("cid", cid);
+            cmd.Prepare();
             await using (var reader = await cmd.ExecuteReaderAsync())
                 while (await reader.ReadAsync())
                 {
@@ -227,6 +257,7 @@ namespace MTCG
                     cmd.Parameters.Clear();
                     cmd.Parameters.AddWithValue("uid", uid);
                     cmd.Parameters.AddWithValue("cid", curr);
+                    cmd.Prepare();
                     var reader = cmd.ExecuteNonQuery();
                 }
             }
@@ -237,12 +268,11 @@ namespace MTCG
         {
             List<Card> CardList = new List<Card>();
             cmd.CommandText = $"SELECT cid, card_type, name, element, damage FROM card_pool WHERE cid in (@1, @2, @3, @4, @5)";
-
             for (int i = 0; i < cardIdArray.Length; i++)
             {
                 cmd.Parameters.AddWithValue($"{i + 1}", cardIdArray[i]);
             }
-
+            cmd.Prepare();
             await using (var reader = await cmd.ExecuteReaderAsync())
                 while (await reader.ReadAsync())
                 {
@@ -263,6 +293,7 @@ namespace MTCG
             List<Card> CardList = new List<Card>();
             cmd.CommandText = $"SELECT cid, card_type, name, element, damage FROM card_pool WHERE cid in (SELECT cid FROM collections WHERE uid = @uid)";
             cmd.Parameters.AddWithValue("uid", uid);
+            cmd.Prepare();
             await using (var reader = await cmd.ExecuteReaderAsync())
                 while (await reader.ReadAsync())
                 {
@@ -283,6 +314,7 @@ namespace MTCG
             UserProfile user = new UserProfile();
             cmd.CommandText = "SELECT user_profile.uid, user_profile.elo, user_profile.deck, user_profile.wins, user_profile.losses, user_profile.draw, users.username  FROM user_profile JOIN users ON user_profile.uid = users.uid WHERE user_profile.uid = @uid";
             cmd.Parameters.AddWithValue("uid", uid);
+            cmd.Prepare();
             await using (var reader = await cmd.ExecuteReaderAsync())
                 while (await reader.ReadAsync())
                 {
@@ -302,15 +334,14 @@ namespace MTCG
         {
             lock (commandlock)
             {
-                cmd.CommandText = "UPDATE user_profile SET elo = @elo, deck = ARRAY[@cid1,@cid2,@cid3,@cid4], wins = @wins, losses = @losses, draw = @draw WHERE uid = @uid";
+                cmd.CommandText = "UPDATE user_profile SET elo = @elo, wins = @wins, losses = @losses, draw = @draw WHERE uid = @uid";
                 cmd.Parameters.AddWithValue("elo", user.elo); // ELO
-                for (int i = 0; i < user.deck.Length; i++) // DECK FOR LOOP
-                {
-                    cmd.Parameters.AddWithValue($"cid{i + 1}", user.deck[i]);
-                }
+               
                 cmd.Parameters.AddWithValue("wins", user.wins); // WINS
                 cmd.Parameters.AddWithValue("losses", user.losses); // LOSSES
                 cmd.Parameters.AddWithValue("draw", user.draw); // DRAW
+                cmd.Parameters.AddWithValue("uid", user.uid); // DRAW
+                cmd.Prepare();
                 cmd.ExecuteNonQuery();
             }
 
@@ -320,6 +351,7 @@ namespace MTCG
         {
             cmd.CommandText = "SELECT uid FROM user_profile WHERE uid = @uid";
             cmd.Parameters.AddWithValue("uid", uid);
+            cmd.Prepare();
             bool UserProfileUidExists = false;
             await using (var reader = await cmd.ExecuteReaderAsync())
                 while (await reader.ReadAsync())
@@ -355,6 +387,7 @@ namespace MTCG
                         {
                             cmd.Parameters.AddWithValue($"cid{i + 1}", user.deck[i]);
                         }
+                        cmd.Prepare();
                         cmd.ExecuteNonQuery();
                         return user.deck;
                     }
@@ -401,6 +434,7 @@ namespace MTCG
             {
                 cmd.Parameters.AddWithValue($"cid{i + 1}", deck[i]);
             }
+            cmd.Prepare();
             bool UserOwnsCard = true;
 
             var dict = new Dictionary<int, int>();
@@ -427,6 +461,10 @@ namespace MTCG
             if (Queue.UsersInQueue.Count >= 2)
             {
                 Match match_results = await CheckForOpponment(cmd);
+                // REMOVE USERS FROM QUEUE
+                RemoveUserFromQueue(match_results.user1);
+                RemoveUserFromQueue(match_results.user2);
+                // SYNC WITH DATABASE
                 SyncUserProfile(match_results.user1, cmd);
                 SyncUserProfile(match_results.user2, cmd);
             }
@@ -435,6 +473,10 @@ namespace MTCG
         public void AddUserToQueue(UserProfile user)
         {
             Queue.UsersInQueue.Add(user);
+        }
+        public void RemoveUserFromQueue(UserProfile user)
+        {
+            Queue.UsersInQueue.Remove(new UserProfile(){ uid = user.uid });
         }
         public async Task<Match> CheckForOpponment(Npgsql.NpgsqlCommand cmd)
         {
@@ -454,6 +496,35 @@ namespace MTCG
                 return match_results;
             }
             else return null;
+        }
+        public async Task<string> CreateTradeoffer(int sender_uid, int receipent_uid, int[] i_receive, int[] u_receive, Npgsql.NpgsqlCommand cmd)
+        {
+            cmd.CommandText = "INSERT INTO tradeoffers (sender_uid, receipent_uid, i_receive, u_receive, status) VALUES (@sender_uid, @receipent_uid, @i_receive, @u_receive, @status)";
+            return "";
+        }
+        async Task<bool> CheckIfUserOwnsCard(int[] cards, int uid, Npgsql.NpgsqlCommand cmd)
+        {
+            cmd.CommandText = "SELECT cid FROM collections WHERE uid = @uid";
+            cmd.Parameters.AddWithValue("uid", uid);
+            cmd.Prepare();
+            bool UserOwnsCard = true;
+
+            var dict = new Dictionary<int, int>();
+            await using (var reader = await cmd.ExecuteReaderAsync())
+                while (await reader.ReadAsync())
+                {
+                    int card = (int)reader["cid"];
+                    if (!dict.ContainsKey(card))
+                    {
+                        dict.Add(card, 0);
+                    }
+                    dict[card]++;
+                }
+            foreach (var card in cards)
+            {
+                if (dict.ContainsKey(card) == false) UserOwnsCard = false;
+            }
+            return UserOwnsCard;
         }
         internal static string GetStringSha256Hash(string text)
         {

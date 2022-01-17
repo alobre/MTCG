@@ -49,11 +49,12 @@ namespace MTCG
 
                     if(d1.DeckCards.Count > 0 && d2.DeckCards.Count > 0)
                     {
-                        // IN CASE OF DRAW: REMOVE BOTH CARDS FROM PLAY
-                        if (d1.DeckCards[0].damage == d2.DeckCards[0].damage)
+                        int RoundWinner = TwoCardsBattle(d1.DeckCards[0], d2.DeckCards[0]);
+                        // IN CASE OF DRAW: REMOVE BOTH CARDS FROM 
+                        if (RoundWinner == 0)
                         {
                             Console.ForegroundColor = colors[6]; // DARKGREEN
-                            Console.WriteLine($"{d2.DeckCards[0].name} WITH {d2.DeckCards[0].damage} DAMAGE EQUALS {d1.DeckCards[0].name} WITH {d1.DeckCards[0].damage} DAMAGE");
+                            Console.WriteLine($"{d1.DeckCards[0].name} WITH {d1.DeckCards[0].damage} {d1.DeckCards[0].element}-DAMAGE EQUALS {d2.DeckCards[0].name} WITH {d2.DeckCards[0].damage} {d2.DeckCards[0].element}-DAMAGE");
                             Console.WriteLine("THIS TURN IS A DRAW!");
                             Console.ForegroundColor = colors[15];// WHITE
 
@@ -66,10 +67,10 @@ namespace MTCG
                             Console.ForegroundColor = colors[15]; // WHITE
                         }
                         // IN CASE OF USER1 CARD WINS: ADD DEFEATED CARD TO DECK1 AND REMOVE IT FROM DECK2
-                        if (d1.DeckCards[0].damage > d2.DeckCards[0].damage)
+                        if (RoundWinner == 1)
                         {
                             Console.ForegroundColor = colors[2]; // DARKGREEN
-                            Console.WriteLine($"{d1.DeckCards[0].name} WITH {d1.DeckCards[0].damage} DAMAGE DEFEATS {d2.DeckCards[0].name} WITH {d2.DeckCards[0].damage} DAMAGE");
+                            Console.WriteLine($"{d1.DeckCards[0].name} WITH {d1.DeckCards[0].damage} {d1.DeckCards[0].element}-DAMAGE DEFEATS {d2.DeckCards[0].name} WITH {d2.DeckCards[0].damage} {d2.DeckCards[0].element}-DAMAGE");
                             Console.WriteLine($"{match.user1.username} WINS THIS TURN!");
                             Console.ForegroundColor = colors[15]; // WHITE
                             d1.DeckCards.Add(d2.DeckCards[0]);
@@ -81,10 +82,10 @@ namespace MTCG
                             Console.ForegroundColor = colors[15]; // WHITE
                         }
                         // IN CASE OF USER2 CARD WINS: ADD DEFEATED CARD TO DECK2 AND REMOVE IT FROM DECK1
-                        if (d1.DeckCards[0].damage < d2.DeckCards[0].damage)
+                        if (RoundWinner == 2)
                         {
                             Console.ForegroundColor = colors[2]; // DARKGREEN
-                            Console.WriteLine($"{d2.DeckCards[0].name} WITH {d2.DeckCards[0].damage} DAMAGE DEFEATS {d1.DeckCards[0].name} WITH {d1.DeckCards[0].damage} DAMAGE");
+                            Console.WriteLine($"{d2.DeckCards[0].name} WITH {d2.DeckCards[0].damage} {d2.DeckCards[0].element}-DAMAGE DEFEATS {d1.DeckCards[0].name} WITH {d1.DeckCards[0].damage} {d1.DeckCards[0].element}-DAMAGE");
                             Console.WriteLine($"{match.user2.username} WINS THIS TURN!");
                             Console.ForegroundColor = colors[15]; // WHITE
 
@@ -110,8 +111,8 @@ namespace MTCG
                             match.user2.wins++;
                             match.user1.losses++;
 
-                            match.user2.elo += 5;
-                            match.user1.elo -= 5;
+                            match.user2.elo += 20;
+                            match.user1.elo -= 15;
 
                             match_running = false;
                         }
@@ -125,8 +126,8 @@ namespace MTCG
                             match.user1.wins++;
                             match.user2.losses++;
 
-                            match.user1.elo += 5;
-                            match.user2.elo -= 5;
+                            match.user1.elo += 20;
+                            match.user2.elo -= 15;
 
                             match_running = false;
                         }
@@ -151,6 +152,79 @@ namespace MTCG
                 }
             }
             return match;
+        }
+        public int TwoCardsBattle(Card card1, Card card2)
+        {
+            // NO SPELLS INVOLVED
+            if(card1.card_type == "monster" && card2.card_type == "monster")
+            {
+                if (card1.damage > card2.damage) return 1;
+                if (card2.damage > card1.damage) return 2;
+                if (card1.damage == card2.damage) return 0;
+            }
+            // SPELLS INVOLVED
+            if(card1.card_type == "spell" || card2.card_type == "spell")
+            {
+                double c1 = card1.damage;
+                if(c1 * DamagemultiplicatorCalculator(card1, card2) > card2.damage)
+                {
+                    return 1;
+                }
+                if(c1 * DamagemultiplicatorCalculator(card1, card2) < card2.damage)
+                {
+                    return 2;
+                }
+                if (c1 * DamagemultiplicatorCalculator(card1, card2) == card2.damage)
+                {
+                    return 0;
+                }
+            }
+            return 0;
+        }
+        double DamagemultiplicatorCalculator(Card card1, Card card2)
+        {
+            if (card1.card_type == "spell" || card2.card_type == "spell")
+            {
+                switch (card1.element)
+                {
+                    case "water":
+                        switch (card2.element)
+                        {
+                            case "water":
+                                return 1;
+                            case "fire":
+                                return 2;
+                            case "normal":
+                                return 0.5;
+                        }
+                        break;
+                    case "fire":
+                        switch (card2.element)
+                        {
+                            case "water":
+                                return 0.5;
+                            case "fire":
+                                return 1;
+                            case "normal":
+                                return 2;
+                        }
+                        break;
+                    case "normal":
+                        switch (card2.element)
+                        {
+                            case "water":
+                                return 2;
+                            case "fire":
+                                return 0.5;
+                            case "normal":
+                                return 1;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return 1;
         }
         int[] ShuffleDeck(int[] deck)
         {

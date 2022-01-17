@@ -130,7 +130,7 @@ namespace MTCG
                     response = await DatabaseHandler.Login(username: body.username, password: body.password, access_token: body.access_token);
                     break;
                 case "/register":
-                    DatabaseHandler.Register(body.username, body.password);
+                    response = await DatabaseHandler.Register(body.username, body.password);
                     break;
                 case "/openPack":
                     response = await DatabaseHandler.OpenPack(username: body.username, password: body.password, access_token: body.access_token);
@@ -140,6 +140,9 @@ namespace MTCG
                     break;
                 case "/startBattle":
                     response = await DatabaseHandler.StartBattle(username: body.username, password: body.password, access_token: body.access_token);
+                    break;
+                case "/tradeoffer":
+                    response = "";
                     break;
             }
             //query != "/startBattle") 

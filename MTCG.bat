@@ -1,0 +1,1 @@
+curl --location --request POST 'localhost:5555/register' \ --header 'Content-Type: text/plain' \ --data-raw "{   \"username\": \"username17\",     \"password\": \"password1\" }"
