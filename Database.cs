@@ -134,9 +134,9 @@ namespace MTCG
                 {
                     reader.Close();
                 }
-                
+
             }
-                
+
             return 0;
         }
         public void SetUserBalance(int uid, Npgsql.NpgsqlCommand cmd)
@@ -336,7 +336,7 @@ namespace MTCG
             {
                 cmd.CommandText = "UPDATE user_profile SET elo = @elo, wins = @wins, losses = @losses, draw = @draw WHERE uid = @uid";
                 cmd.Parameters.AddWithValue("elo", user.elo); // ELO
-               
+
                 cmd.Parameters.AddWithValue("wins", user.wins); // WINS
                 cmd.Parameters.AddWithValue("losses", user.losses); // LOSSES
                 cmd.Parameters.AddWithValue("draw", user.draw); // DRAW
@@ -364,6 +364,7 @@ namespace MTCG
                 lock (commandlock)
                 {
                     cmd.CommandText = "INSERT INTO user_profile (uid, elo, wins, losses, draw) VALUES (@uid, 100, 0,0,0)";
+                    cmd.Parameters.AddWithValue("uid", uid);
                     cmd.ExecuteNonQueryAsync();
                     return "User Profile did not exist before and was created";
                 }
@@ -476,7 +477,7 @@ namespace MTCG
         }
         public void RemoveUserFromQueue(UserProfile user)
         {
-            Queue.UsersInQueue.Remove(new UserProfile(){ uid = user.uid });
+            Queue.UsersInQueue.Remove(new UserProfile() { uid = user.uid });
         }
         public async Task<Match> CheckForOpponment(Npgsql.NpgsqlCommand cmd)
         {
@@ -497,12 +498,77 @@ namespace MTCG
             }
             else return null;
         }
-        public async Task<string> CreateTradeoffer(int sender_uid, int receipent_uid, int[] i_receive, int[] u_receive, Npgsql.NpgsqlCommand cmd)
+        public Tradeoffers GetTradeoffers(int uid, Npgsql.NpgsqlCommand cmd)
         {
-            cmd.CommandText = "INSERT INTO tradeoffers (sender_uid, receipent_uid, i_receive, u_receive, status) VALUES (@sender_uid, @receipent_uid, @i_receive, @u_receive, @status)";
-            return "";
+            lock (commandlock)
+            {
+                Tradeoffers tradeoffers = new Tradeoffers();
+                cmd.CommandText = "SELECT * FROM tradeoffers WHERE uid = @uid";
+                cmd.Parameters.AddWithValue("uid", uid);
+                cmd.Prepare();
+
+                using (var reader = cmd.ExecuteReader())
+                    while (reader.Read())
+                    {
+                        Tradeoffer to = new Tradeoffer();
+                        to.tradeoffer_id = (int)reader["traderoffer_id"];
+                        to.sender_uid = (int)reader["sender_uid"];
+                        to.recipient_uid = (int)reader["recipient_uid"];
+                        to.i_receive = (int[])reader["i_receive"];
+                        to.u_receive = (int[])reader["u_receive"];
+                        to.status = (string)reader["status"];
+
+                        tradeoffers.AllTradeoffers.Add(to);
+                    }
+                return tradeoffers;
+            }
+
         }
-        async Task<bool> CheckIfUserOwnsCard(int[] cards, int uid, Npgsql.NpgsqlCommand cmd)
+        public async Task<string> AcceptTradeoffer(int tradeoffer_id, Npgsql.NpgsqlCommand cmd)
+        {
+            cmd.CommandText = "UPDATE tradeoffers SET status = @status WHERE traderoffer_id = @tradeoffer_id";
+            string status = "accepted";
+            cmd.Parameters.AddWithValue("status", status);
+            cmd.Parameters.AddWithValue("tradeoffer_id", tradeoffer_id);
+            cmd.Prepare();
+
+            cmd.ExecuteNonQueryAsync();
+
+            return "Tradeoffer successfully created!";
+        }
+        public async Task<string> DeclineTradeoffer(int tradeoffer_id, Npgsql.NpgsqlCommand cmd)
+        {
+            cmd.CommandText = "UPDATE tradeoffers SET status = @status WHERE traderoffer_id = @tradeoffer_id";
+            string status = "declined";
+            cmd.Parameters.AddWithValue("status", status);
+            cmd.Parameters.AddWithValue("tradeoffer_id", tradeoffer_id);
+            cmd.Prepare();
+
+            await cmd.ExecuteNonQueryAsync();
+
+            return "Tradeoffer successfully created!";
+        }
+        public string CreateTradeoffer(int sender_uid, int recipient_uid, int[] i_receive, int[] u_receive, Npgsql.NpgsqlCommand cmd)
+        {
+            lock (commandlock)
+            {
+                cmd.CommandText = "INSERT INTO tradeoffers (sender_uid, recipient_uid, i_receive, u_receive, status) VALUES (@sender_uid, @recipient_uid, @i_receive, @u_receive, @status)";
+
+                cmd.Parameters.AddWithValue("sender_uid", sender_uid);
+                cmd.Parameters.AddWithValue("recipient_uid", recipient_uid);
+                cmd.Parameters.AddWithValue("i_receive", i_receive);
+                cmd.Parameters.AddWithValue("u_receive", u_receive);
+                string status = "pending";
+                cmd.Parameters.AddWithValue("status", status);
+                cmd.Prepare();
+
+                cmd.ExecuteNonQuery();
+
+                return "Tradeoffer successfully created!";
+            }
+
+        }
+        public async Task<bool> CheckIfUserOwnsCard(int[] cards, int uid, Npgsql.NpgsqlCommand cmd)
         {
             cmd.CommandText = "SELECT cid FROM collections WHERE uid = @uid";
             cmd.Parameters.AddWithValue("uid", uid);

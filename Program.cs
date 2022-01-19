@@ -82,7 +82,7 @@ namespace MTCG
                                 switch (requestType.ToLower())
                                 {
                                     case "post":
-                                        string response = await POST(query, jsonBody, requestBody.deck);
+                                        string response = await POST(query, jsonBody, requestBody);
                                         Console.WriteLine("Response: " + response);
                                         string res = 
                                         @$"HTTP/1.1 200 OK
@@ -121,7 +121,7 @@ namespace MTCG
             }
         }
 
-        static public async Task<string> POST(string query, credentials body, int[] deck = null)
+        static public async Task<string> POST(string query, credentials body, Body requestBody = null)
         {
             string response = "string.Empty";
             switch (query)
@@ -136,13 +136,13 @@ namespace MTCG
                     response = await DatabaseHandler.OpenPack(username: body.username, password: body.password, access_token: body.access_token);
                     break;
                 case "/setDeck":
-                    response = await DatabaseHandler.SetDeck(deck, username: body.username, password: body.password, access_token: body.access_token);
+                    response = await DatabaseHandler.SetDeck(requestBody.deck, username: body.username, password: body.password, access_token: body.access_token);
                     break;
                 case "/startBattle":
                     response = await DatabaseHandler.StartBattle(username: body.username, password: body.password, access_token: body.access_token);
                     break;
-                case "/tradeoffer":
-                    response = "";
+                case "/createTradeoffer":
+                    response = await DatabaseHandler.Tradeoffer(requestBody.recipient_uid, requestBody.i_receive, requestBody.u_receive, requestBody.action, username: body.username, password: body.password, access_token: body.access_token);
                     break;
             }
             //query != "/startBattle") 
@@ -155,6 +155,9 @@ namespace MTCG
             {
                 case "/getCollection":
                     response = await DatabaseHandler.ShowCollection(username: body.username, password: body.password, access_token: body.access_token);
+                    break;
+                case "/getTradeoffers":
+                    response = await DatabaseHandler.GetTradeoffers(username: body.username, password: body.password, access_token: body.access_token);
                     break;
             }
             return response;

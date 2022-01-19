@@ -62,7 +62,7 @@ namespace MTCG
                     List<Card> CardList = await db.CreateCardList(cardIdArray, cmd);
                     string response = JsonSerializer.Serialize<List<Card>>(CardList);
 
-                    return $"{{\"msg\": \"Pack purchase successful!\", \"success\": true, \"coins\": {newCoins}, \"cards\": {response}}}";
+                    return $"{{\"msg\": \"Pack purchase successful!\", \"success\": true, \"coins\": {newCoins}, \"data\": {response}}}";
                 }
             }
             return "{\"msg\": \"Pack purchase failed!\", \"success\": false}";
@@ -84,7 +84,7 @@ namespace MTCG
 
                     string response = JsonSerializer.Serialize<List<Card>>(CardList);
 
-                    return $"{{\"msg\": \"Successfully retrieved collection!\", \"success\": true, \"cards\": {response}}}";
+                    return $"{{\"msg\": \"Successfully retrieved collection!\", \"success\": true, \"data\": {response}}}";
                 }
             }
             return "{\"msg\": \"Collection call error\", \"success\": false}";
@@ -105,7 +105,7 @@ namespace MTCG
                     user.deck = deck;
                     int[] confirmedDeck = await db.SetDeck(json.uid, user, cmd);
 
-                    return $"{{\"msg\": \"Successfully Updated Deck\", \"success\": true, \"deck\": {confirmedDeck.ToString()}}}";
+                    return $"{{\"msg\": \"Successfully Updated Deck\", \"success\": true, \"data\": {confirmedDeck.ToString()}}}";
                 }
             }
             return $"{{\"msg\": \"Updating deck failed make sure you own the cards and don't have any duplicates.\", \"success\": false, \"deck\": []}}";
@@ -134,7 +134,7 @@ namespace MTCG
             }
             return "{\"msg\": \"Searching for Battle failed\", \"success\": false}";
         }
-        public static async Task<string> Tradeoffer(int recipient_uid, int[] i_receive, int[] u_receive, string status, string action, string username = "", string password = "", string access_token = "")
+        public static async Task<string> Tradeoffer(int recipient_uid, int[] i_receive, int[] u_receive,  string action, int tradeoffer_id = -1, string username = "", string password = "", string access_token = "")
         {
             if (username != null && password != null || access_token != null)
             {
@@ -148,16 +148,41 @@ namespace MTCG
                     switch (action)
                     {
                         case "accept":
-                            break;
+                            string accept_response = await db.DeclineTradeoffer(tradeoffer_id, cmd);
+                            return accept_response;
                         case "decline":
-                            break;
+                            string decline_response = await db.DeclineTradeoffer(tradeoffer_id, cmd);
+                            return decline_response;
                         case "create":
-                            
-                            break;
+                            string create_response = db.CreateTradeoffer(json.uid, recipient_uid, i_receive, u_receive, cmd);
+                            return create_response;
                     }
+                    return "";
                 }
+                return "";
             }
+            return "";
 
+        }
+        public static async Task<string> GetTradeoffers(string username = "", string password = "", string access_token = "")
+        {
+            if (username != null && password != null || access_token != null)
+            {
+                string loginResponse = await Login(username, password, access_token);
+                responseJson json = JsonSerializer.Deserialize<responseJson>(loginResponse);
+                if (json.success == true)
+                {
+                    Database db = new Database();
+                    Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
+                    var cmd = new Npgsql.NpgsqlCommand("", conn);
+                    Tradeoffers tradeoffers = db.GetTradeoffers(json.uid, cmd);
+                    
+                    string response = JsonSerializer.Serialize<Tradeoffers>(tradeoffers);
+                    return $"{{\"msg\": \"Successfully retrieved tradeoffers!\", \"success\": true, \"data\": {response}}}";
+                }
+                return $"{{\"msg\": \"Authentication failed\", \"success\": false}}";
+            }
+            return $"{{\"msg\": \"Authentication failed\", \"success\": false}}";
         }
     }
 }
