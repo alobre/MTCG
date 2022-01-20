@@ -538,7 +538,7 @@ namespace MTCG
         }
         public async Task<string> DeclineTradeoffer(int tradeoffer_id, Npgsql.NpgsqlCommand cmd)
         {
-            cmd.CommandText = "UPDATE tradeoffers SET status = @status WHERE traderoffer_id = @tradeoffer_id";
+            cmd.CommandText = "UPDATE tradeoffers SET status = @status WHERE tradeoffer_id = @tradeoffer_id";
             string status = "declined";
             cmd.Parameters.AddWithValue("status", status);
             cmd.Parameters.AddWithValue("tradeoffer_id", tradeoffer_id);
@@ -546,7 +546,7 @@ namespace MTCG
 
             await cmd.ExecuteNonQueryAsync();
 
-            return "Tradeoffer successfully created!";
+            return "Tradeoffer successfully declined!";
         }
         public string CreateTradeoffer(int sender_uid, int recipient_uid, int[] i_receive, int[] u_receive, Npgsql.NpgsqlCommand cmd)
         {
