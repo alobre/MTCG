@@ -148,10 +148,10 @@ namespace MTCG
                     switch (action)
                     {
                         case "accept":
-                            string accept_response = await db.AcceptTradeoffer(tradeoffer_id, cmd);
+                            string accept_response = await db.AcceptTradeoffer(json.uid, tradeoffer_id, cmd);
                             return accept_response;
                         case "decline":
-                            string decline_response = await db.DeclineTradeoffer(tradeoffer_id, cmd);
+                            string decline_response = await db.DeclineTradeoffer(json.uid, tradeoffer_id, cmd);
                             return decline_response;
                         case "create":
                             string create_response = db.CreateTradeoffer(json.uid, recipient_uid, i_receive, u_receive, cmd);

@@ -147,6 +147,9 @@ namespace MTCG
                 case "/declineTradeoffer":
                     response = await DatabaseHandler.Tradeoffer(requestBody.recipient_uid, requestBody.i_receive, requestBody.u_receive, requestBody.action, requestBody.tradeoffer_id, username: body.username, password: body.password, access_token: body.access_token);
                     break;
+                case "/acceptTradeoffer":
+                    response = await DatabaseHandler.Tradeoffer(requestBody.recipient_uid, requestBody.i_receive, requestBody.u_receive, requestBody.action, requestBody.tradeoffer_id, username: body.username, password: body.password, access_token: body.access_token);
+                    break;
             }
             //query != "/startBattle") 
             return response;

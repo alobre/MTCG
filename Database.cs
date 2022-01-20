@@ -511,7 +511,7 @@ namespace MTCG
                     while (reader.Read())
                     {
                         Tradeoffer to = new Tradeoffer();
-                        to.tradeoffer_id = (int)reader["traderoffer_id"];
+                        to.tradeoffer_id = (int)reader["tradeoffer_id"];
                         to.sender_uid = (int)reader["sender_uid"];
                         to.recipient_uid = (int)reader["recipient_uid"];
                         to.i_receive = (int[])reader["i_receive"];
@@ -524,19 +524,76 @@ namespace MTCG
             }
 
         }
-        public async Task<string> AcceptTradeoffer(int tradeoffer_id, Npgsql.NpgsqlCommand cmd)
+        public Tradeoffer GetTradeofferByTradeoffer_id(int tradeoffer_id, Npgsql.NpgsqlCommand cmd)
         {
-            cmd.CommandText = "UPDATE tradeoffers SET status = @status WHERE traderoffer_id = @tradeoffer_id";
+            lock (commandlock)
+            {
+                Tradeoffer tradeoffer = new Tradeoffer();
+                cmd.CommandText = "SELECT * FROM tradeoffers WHERE tradeoffer_id = @tradeoffer_id";
+                cmd.Parameters.AddWithValue("tradeoffer_id", tradeoffer_id);
+                cmd.Prepare();
+
+                using (var reader = cmd.ExecuteReader())
+                    while (reader.Read())
+                    {
+                        tradeoffer.tradeoffer_id = (int)reader["tradeoffer_id"];
+                        tradeoffer.sender_uid = (int)reader["sender_uid"];
+                        tradeoffer.recipient_uid = (int)reader["recipient_uid"];
+                        tradeoffer.i_receive = (int[])reader["i_receive"];
+                        tradeoffer.u_receive = (int[])reader["u_receive"];
+                        tradeoffer.status = (string)reader["status"];
+                    }
+                return tradeoffer;
+            }
+
+        }
+        public async Task<string> AcceptTradeoffer(int uid, int tradeoffer_id, Npgsql.NpgsqlCommand cmd)
+        {
+            cmd.CommandText = "UPDATE tradeoffers SET status = @status WHERE tradeoffer_id = @tradeoffer_id AND recipient_uid = @uid";
             string status = "accepted";
             cmd.Parameters.AddWithValue("status", status);
+            cmd.Parameters.AddWithValue("uid", uid);
             cmd.Parameters.AddWithValue("tradeoffer_id", tradeoffer_id);
             cmd.Prepare();
 
-            cmd.ExecuteNonQueryAsync();
+            await cmd.ExecuteNonQueryAsync();
 
-            return "Tradeoffer successfully created!";
+            Tradeoffer tradeoffer = GetTradeofferByTradeoffer_id(tradeoffer_id, cmd);
+            // CHECK IF USER WOULD RECEIVE CARDS, ELSE IT IS NO NECESSARY TO SWAP
+            if(tradeoffer.u_receive.Length > 0) ChangeCardOwner(tradeoffer.recipient_uid, tradeoffer.sender_uid, tradeoffer.u_receive, cmd);
+            if(tradeoffer.i_receive.Length > 0) ChangeCardOwner(tradeoffer.sender_uid, tradeoffer.recipient_uid, tradeoffer.i_receive, cmd);
+
+            return "Tradeoffer successfully accepted!";
         }
-        public async Task<string> DeclineTradeoffer(int tradeoffer_id, Npgsql.NpgsqlCommand cmd)
+        // SWAP CARDS TO THE NEW OWNER
+        public string ChangeCardOwner(int uid, int sender_uid, int[] cards, Npgsql.NpgsqlCommand cmd)
+        {
+            lock (commandlock)
+            {
+                string cardsCountString = "";
+                for (int i = 1; i <= cards.Length; i++)
+                {
+                    if(i != cards.Length) cardsCountString += $"@c{i},";
+                    else cardsCountString += $"@c{i}";
+                }
+                string commandText = $"UPDATE collections SET uid = @uid WHERE cid IN ({cardsCountString}) AND uid = @sender_uid";
+                cmd.CommandText = commandText;
+                cmd.Parameters.AddWithValue("cards", cards);
+                for (int i = 0; i < cards.Length; i++)
+                {
+                    cmd.Parameters.AddWithValue($"c{i+1}", cards[i]);
+                }
+                cmd.Parameters.AddWithValue("uid", uid);
+                cmd.Parameters.AddWithValue("sender_uid", sender_uid);
+                cmd.Prepare();
+
+                cmd.ExecuteNonQuery();
+
+                return "Tradeoffer successfully accepted!";
+            }
+
+        }
+        public async Task<string> DeclineTradeoffer(int uid, int tradeoffer_id, Npgsql.NpgsqlCommand cmd)
         {
             cmd.CommandText = "UPDATE tradeoffers SET status = @status WHERE tradeoffer_id = @tradeoffer_id";
             string status = "declined";
