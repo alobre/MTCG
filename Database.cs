@@ -503,7 +503,7 @@ namespace MTCG
             lock (commandlock)
             {
                 Tradeoffers tradeoffers = new Tradeoffers();
-                cmd.CommandText = "SELECT * FROM tradeoffers WHERE uid = @uid";
+                cmd.CommandText = "SELECT * FROM tradeoffers WHERE recipient_uid = @uid";
                 cmd.Parameters.AddWithValue("uid", uid);
                 cmd.Prepare();
 

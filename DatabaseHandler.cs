@@ -175,9 +175,9 @@ namespace MTCG
                     Database db = new Database();
                     Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
                     var cmd = new Npgsql.NpgsqlCommand("", conn);
-                    Tradeoffers tradeoffers = db.GetTradeoffers(json.uid, cmd);
+                    var tradeoffers = db.GetTradeoffers(json.uid, cmd);
                     
-                    string response = JsonSerializer.Serialize<Tradeoffers>(tradeoffers);
+                    string response = JsonSerializer.Serialize<List<Tradeoffer>>(tradeoffers.AllTradeoffers);
                     return $"{{\"msg\": \"Successfully retrieved tradeoffers!\", \"success\": true, \"data\": {response}}}";
                 }
                 return $"{{\"msg\": \"Authentication failed\", \"success\": false}}";
