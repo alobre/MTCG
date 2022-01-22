@@ -184,5 +184,25 @@ namespace MTCG
             }
             return $"{{\"msg\": \"Authentication failed\", \"success\": false}}";
         }
+        public static async Task<string> GetUserprofile(string username = "", string password = "", string access_token = "")
+        {
+            if (username != null && password != null || access_token != null)
+            {
+                string loginResponse = await Login(username, password, access_token);
+                responseJson json = JsonSerializer.Deserialize<responseJson>(loginResponse);
+                if (json.success == true)
+                {
+                    Database db = new Database();
+                    Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
+                    var cmd = new Npgsql.NpgsqlCommand("", conn);
+                    var user_profile = await db.GetUserprofile(json.uid, cmd);
+
+                    string response = JsonSerializer.Serialize<UserProfile>(user_profile);
+                    return $"{{\"msg\": \"Successfully retrieved Userprofile!\", \"success\": true, \"data\": {response}}}";
+                }
+                return $"{{\"msg\": \"Authentication failed\", \"success\": false}}";
+            }
+            return $"{{\"msg\": \"Authentication failed\", \"success\": false}}";
+        }
     }
 }

@@ -103,16 +103,6 @@ namespace MTCG
                 }
             return "credentials wrong";
         }
-        /*public static async Task<string> ExtendAccessToken(string username, string password, Npgsql.NpgsqlCommand cmd)
-		{
-			cmd.CommandText = $"SELECT act.\"accessToken\" FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE u.username == {username} && u.password = {password}";
-			await using (var reader = await cmd.ExecuteReaderAsync())
-				while (await reader.ReadAsync())
-				{
-					return (string)reader["accessToken"];
-				}
-			return "credentials wrong";
-		}*/
         public async Task<int> GetUIDByUsername(string username, Npgsql.NpgsqlCommand cmd)
         {
             cmd.CommandText = $"SELECT uid FROM users WHERE username = @username";
@@ -149,23 +139,12 @@ namespace MTCG
                 cmd.ExecuteNonQueryAsync();
             }
         }
-        public async Task<int> GetUserBalance(string username, Npgsql.NpgsqlCommand cmd)
-        {
-            int uid = await GetUIDByUsername(username, cmd);
-            cmd.CommandText = $"SELECT coins FROM balances WHERE uid = '(@uid)'";
-            cmd.Parameters.AddWithValue("uid", uid);
-            cmd.Prepare();
-            await using (var reader = await cmd.ExecuteReaderAsync())
-                while (await reader.ReadAsync())
-                    return reader.GetInt32(0);
-            return 0;
-        }
         public void SetAccessToken(int uid, string username, string password, Npgsql.NpgsqlCommand cmd)
         {
             lock (commandlock)
             {
-                string hash = GetStringSha256Hash(username + password);
-                cmd.CommandText = $"INSERT INTO access_tokens(uid, access_token, due_date) VALUES(@uid, @hash, '2022-01-01')";
+                string hash = GetStringSha256Hash(uid + username + password);
+                cmd.CommandText = $"INSERT INTO access_tokens(uid, access_token, due_date) VALUES(@uid, @hash, '2022-02-02')";
                 cmd.Parameters.AddWithValue("uid", uid);
                 cmd.Parameters.AddWithValue("hash", hash);
                 cmd.Prepare();
@@ -246,7 +225,7 @@ namespace MTCG
                 }
             return new Card();
         }
-        public async void AssignCardsToUser(int uid, int[] cardIdArray, Npgsql.NpgsqlCommand cmd)
+        public void AssignCardsToUser(int uid, int[] cardIdArray, Npgsql.NpgsqlCommand cmd)
         {
             lock (commandlock)
             {
@@ -483,12 +462,6 @@ namespace MTCG
         {
             if (Queue.UsersInQueue.Count >= 2)
             {
-                /*
-				for(int i = 0; i < Q.UsersInQueue.Count; i++)
-                {
-					Q.UsersInQueue[i].elo
-                }
-				*/
                 Battle battle = new Battle();
                 Match match = new Match(); // ADD USERS TO MATCH
                 match.user1 = Queue.UsersInQueue[0];
@@ -648,6 +621,25 @@ namespace MTCG
                 if (dict.ContainsKey(card) == false) UserOwnsCard = false;
             }
             return UserOwnsCard;
+        }
+        public async Task<UserProfile> GetUserprofile(int uid, Npgsql.NpgsqlCommand cmd)
+        {
+            cmd.CommandText = "SELECT * FROM user_profile WHERE uid = @uid";
+            cmd.Parameters.AddWithValue("uid", uid);
+            cmd.Prepare();
+
+            UserProfile user_profile = new UserProfile();
+            await using (var reader = await cmd.ExecuteReaderAsync())
+                while (await reader.ReadAsync())
+                {
+                    user_profile.uid = (int)reader["uid"];
+                    user_profile.elo = (int)reader["elo"];
+                    user_profile.deck = (int[])reader["deck"];
+                    user_profile.wins = (int)reader["wins"];
+                    user_profile.losses = (int)reader["losses"];
+                    user_profile.draw = (int)reader["draw"];
+                }
+            return user_profile;
         }
         internal static string GetStringSha256Hash(string text)
         {

@@ -165,6 +165,9 @@ namespace MTCG
                 case "/getTradeoffers":
                     response = await DatabaseHandler.GetTradeoffers(username: body.username, password: body.password, access_token: body.access_token);
                     break;
+                case "/getUserprofile":
+                    response = await DatabaseHandler.GetUserprofile(username: body.username, password: body.password, access_token: body.access_token);
+                    break;
             }
             return response;
         }
