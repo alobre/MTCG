@@ -171,6 +171,9 @@ namespace MTCG
                 case "/getUserprofile":
                     response = await DatabaseHandler.GetUserprofile(username: body.username, password: body.password, access_token: body.access_token);
                     break;
+                case "/getAccessToken":
+                    response = await DatabaseHandler.GetAccessToken(username: body.username, password: body.password);
+                    break;
             }
             return response;
         }

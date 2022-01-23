@@ -21,7 +21,7 @@ namespace MTCG
         {
             Database db = new Database();
             Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
-            if (access_token != null)
+            if (access_token != "")
             {
                 var cmd = new Npgsql.NpgsqlCommand("", conn);
                 bool isValid = await db.ValidateToken(access_token, cmd);
@@ -199,6 +199,25 @@ namespace MTCG
 
                     string response = JsonSerializer.Serialize<UserProfile>(user_profile);
                     return $"{{\"msg\": \"Successfully retrieved Userprofile!\", \"success\": true, \"data\": {response}}}";
+                }
+                return $"{{\"msg\": \"Authentication failed\", \"success\": false}}";
+            }
+            return $"{{\"msg\": \"Authentication failed\", \"success\": false}}";
+        }
+        public static async Task<string> GetAccessToken(string username = "", string password = "")
+        {
+            if (username != null && password != null)
+            {
+                string loginResponse = await Login(username, password);
+                responseJson json = JsonSerializer.Deserialize<responseJson>(loginResponse);
+                if (json.success == true)
+                {
+                    Database db = new Database();
+                    Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
+                    var cmd = new Npgsql.NpgsqlCommand("", conn);
+                    var access_token = await db.GetAccessToken(username, password, cmd);
+
+                    return $"{{\"msg\": \"Successfully retrieved access_token!\", \"success\": true, \"data\": {access_token}}}";
                 }
                 return $"{{\"msg\": \"Authentication failed\", \"success\": false}}";
             }

@@ -90,9 +90,9 @@ namespace MTCG
                 }
             return false;
         }
-        public static async Task<string> GetAccessToken(string username, string password, Npgsql.NpgsqlCommand cmd)
+        public async Task<string> GetAccessToken(string username, string password, Npgsql.NpgsqlCommand cmd)
         {
-            cmd.CommandText = $"SELECT act.access_token FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE u.username == @username && u.password = @password";
+            cmd.CommandText = $"SELECT act.access_token FROM users AS u JOIN access_tokens AS act ON u.uid = act.uid WHERE u.username = @username AND u.password = @password";
             cmd.Parameters.AddWithValue("username", username);
             cmd.Parameters.AddWithValue("password", password);
             cmd.Prepare();
