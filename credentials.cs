@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MTCG
 {
-    public class credentials
+    public class Credentials
     {
         [JsonInclude]
         public string username { get; set; }

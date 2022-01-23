@@ -48,7 +48,7 @@ namespace MTCG
                                 string request = Encoding.UTF8.GetString(msg).TrimEnd('\0');
                                 string requestType, query;
                                 string jsonString = "";
-                                credentials jsonBody;
+                                Credentials jsonBody;
                                 Body requestBody;
                                 using (StringReader reader = new StringReader(request))
                                 {
@@ -74,7 +74,7 @@ namespace MTCG
                                     body = await reader.ReadLineAsync();
                                     Console.WriteLine(body);
                                     Console.WriteLine(jsonString);
-                                    jsonBody = JsonSerializer.Deserialize<credentials>(jsonString);
+                                    jsonBody = JsonSerializer.Deserialize<Credentials>(jsonString);
                                     requestBody = JsonSerializer.Deserialize<Body>(jsonString);
                                     Console.WriteLine(jsonBody.access_token);
                                 }
@@ -121,7 +121,7 @@ namespace MTCG
             }
         }
 
-        static public async Task<string> POST(string query, credentials body, Body requestBody = null)
+        static public async Task<string> POST(string query, Credentials body, Body requestBody = null)
         {
             string response = "string.Empty";
             switch (query)
@@ -142,19 +142,22 @@ namespace MTCG
                     response = await DatabaseHandler.StartBattle(username: body.username, password: body.password, access_token: body.access_token);
                     break;
                 case "/createTradeoffer":
-                    response = await DatabaseHandler.Tradeoffer(requestBody.recipient_uid, requestBody.i_receive, requestBody.u_receive, requestBody.action, username: body.username, password: body.password, access_token: body.access_token);
+                    string actionCreate = "create";
+                    response = await DatabaseHandler.Tradeoffer(requestBody.recipient_uid, requestBody.i_receive, requestBody.u_receive, actionCreate, username: body.username, password: body.password, access_token: body.access_token);
                     break;
                 case "/declineTradeoffer":
-                    response = await DatabaseHandler.Tradeoffer(requestBody.recipient_uid, requestBody.i_receive, requestBody.u_receive, requestBody.action, requestBody.tradeoffer_id, username: body.username, password: body.password, access_token: body.access_token);
+                    string actionDecline = "delete";
+                    response = await DatabaseHandler.Tradeoffer(requestBody.recipient_uid, requestBody.i_receive, requestBody.u_receive, actionDecline, requestBody.tradeoffer_id, username: body.username, password: body.password, access_token: body.access_token);
                     break;
                 case "/acceptTradeoffer":
-                    response = await DatabaseHandler.Tradeoffer(requestBody.recipient_uid, requestBody.i_receive, requestBody.u_receive, requestBody.action, requestBody.tradeoffer_id, username: body.username, password: body.password, access_token: body.access_token);
+                    string actionAccept = "accept";
+                    response = await DatabaseHandler.Tradeoffer(requestBody.recipient_uid, requestBody.i_receive, requestBody.u_receive, actionAccept, requestBody.tradeoffer_id, username: body.username, password: body.password, access_token: body.access_token);
                     break;
             }
             //query != "/startBattle") 
             return response;
         }
-        static public async Task<string> GET(string query, credentials body)
+        static public async Task<string> GET(string query, Credentials body)
         {
             string response = "string.Empty";
             switch (query)
@@ -171,33 +174,6 @@ namespace MTCG
             }
             return response;
         }
-
-        /*static public void Register(string username = "", string password = "", string access_token = "")
-        {
-            try
-            {
-                User neuer_User = new User(username, password);
-                User.Alle_User.Add(neuer_User);
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Registrierung fehlerhaft");
-            }
-
-        }*/
-
-        /*static public void Login(string username = ", string password)
-        {
-            try
-            {
-                Login(username, password);
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Registrierung fehlerhaft");
-            }
-        }*/
-
         public void acquire_cards()
         {
 

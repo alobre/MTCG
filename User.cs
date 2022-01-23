@@ -12,7 +12,7 @@ namespace MTCG
     {
         public static List<User> Alle_User = new List<User>();
 
-        internal credentials Usercredentials = new credentials();
+        internal Credentials Usercredentials = new Credentials();
 
         Stack User_Stack = new Stack();
         Deck User_deck = new Deck();
