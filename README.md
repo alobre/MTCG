@@ -27,8 +27,6 @@ Every request either needs username and password OR authentication token <br>
     "access_token": "string", <br>
     "deck ": <int[]> <br>
 } <br>
-
- 
 /startBattle <br>
 { <br>
     "username": "string", <br>
