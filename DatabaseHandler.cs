@@ -21,7 +21,7 @@ namespace MTCG
         {
             Database db = new Database();
             Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
-            if (access_token != "")
+            if (access_token != null)
             {
                 var cmd = new Npgsql.NpgsqlCommand("", conn);
                 bool isValid = await db.ValidateToken(access_token, cmd);

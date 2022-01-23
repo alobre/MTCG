@@ -323,8 +323,19 @@ namespace MTCG
                 cmd.Prepare();
                 cmd.ExecuteNonQuery();
             }
-
         }
+        public void AddCoins(int uid, int value, Npgsql.NpgsqlCommand cmd)
+        {
+            lock (commandlock)
+            {
+                cmd.CommandText = "UPDATE balances SET coins = coins + @value WHERE uid = @uid";
+                cmd.Parameters.AddWithValue("uid", uid); // ELO
+                cmd.Parameters.AddWithValue("value", value); // WINS
+                cmd.Prepare();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
 
         public async Task<string> CheckAndCreateUserProfile(int uid, Npgsql.NpgsqlCommand cmd)
         {
@@ -452,11 +463,11 @@ namespace MTCG
         }
         public void AddUserToQueue(UserProfile user)
         {
-            Queue.UsersInQueue.Add(user);
+            if(Queue.UsersInQueue.Where(u => u.uid == user.uid).FirstOrDefault() == null) Queue.UsersInQueue.Add(user);
         }
         public void RemoveUserFromQueue(UserProfile user)
         {
-            Queue.UsersInQueue.Remove(new UserProfile() { uid = user.uid });
+            Queue.UsersInQueue.Remove(Queue.UsersInQueue.Find(u => u.uid == user.uid));
         }
         public async Task<Match> CheckForOpponment(Npgsql.NpgsqlCommand cmd)
         {

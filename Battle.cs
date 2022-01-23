@@ -101,6 +101,9 @@ namespace MTCG
                     }
                     else
                     {
+                        Database db = new Database();
+                        Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
+                        var cmd = new Npgsql.NpgsqlCommand("", conn);
                         // IF D1 HAS NO CARDS: USER2 WINS
                         if (d1.DeckCards.Count == 0 && d2.DeckCards.Count > 0)
                         {
@@ -113,6 +116,9 @@ namespace MTCG
 
                             match.user2.elo += 20;
                             match.user1.elo -= 15;
+
+                            // ADD 1 COIN TO WINNER
+                            db.AddCoins(match.user2.uid, 1, cmd);
 
                             match_running = false;
                         }
@@ -129,6 +135,9 @@ namespace MTCG
                             match.user1.elo += 20;
                             match.user2.elo -= 15;
 
+                            // ADD 1 COIN TO WINNER
+                            db.AddCoins(match.user1.uid, 1, cmd);
+
                             match_running = false;
                         }
                         // IF BOTH DECKS HAVE NO CARDS
@@ -137,8 +146,10 @@ namespace MTCG
                             Console.ForegroundColor = colors[10]; // GREEN
                             Console.WriteLine($"{match.user1.username} AND {match.user2.username} HAVE NO CARDS LEFT. THIS GAME IS A DRAW. GGCHEN!");
                             Console.ForegroundColor = colors[15]; // WHITE
+
                             match.user1.draw++;
                             match.user2.draw++;
+
                             match_running = false;
                         }
                     }
