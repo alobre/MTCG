@@ -134,7 +134,7 @@ namespace MTCG
             }
             return "{\"msg\": \"Searching for Battle failed\", \"success\": false}";
         }
-        public static async Task<string> Tradeoffer(int recipient_uid, int[] i_receive, int[] u_receive,  string action, int tradeoffer_id = -1, string username = "", string password = "", string access_token = "")
+        public static async Task<string> Tradeoffer(int recipient_uid, int[] i_receive, int[] u_receive, string action, int tradeoffer_id = -1, string username = "", string password = "", string access_token = "")
         {
             if (username != null && password != null || access_token != null)
             {
@@ -176,7 +176,7 @@ namespace MTCG
                     Npgsql.NpgsqlConnection conn = await db.ConnectDB("localhost", "postgres", "postgres", "mtcg");
                     var cmd = new Npgsql.NpgsqlCommand("", conn);
                     var tradeoffers = db.GetTradeoffers(json.uid, cmd);
-                    
+
                     string response = JsonSerializer.Serialize<List<Tradeoffer>>(tradeoffers.AllTradeoffers);
                     return $"{{\"msg\": \"Successfully retrieved tradeoffers!\", \"success\": true, \"data\": {response}}}";
                 }

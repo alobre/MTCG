@@ -13,7 +13,6 @@ namespace MTCG
 {
     class Program
     {
-        static List<User> Users_Online = new List<User>();
         static TcpListener listener;
 
         public object Show { get; private set; }
@@ -84,7 +83,7 @@ namespace MTCG
                                     case "post":
                                         string response = await POST(query, jsonBody, requestBody);
                                         Console.WriteLine("Response: " + response);
-                                        string res = 
+                                        string res =
                                         @$"HTTP/1.1 200 OK
                                         Last-Modified: 25.20.2021
                                         Content-Length:

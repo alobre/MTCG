@@ -463,7 +463,7 @@ namespace MTCG
         }
         public void AddUserToQueue(UserProfile user)
         {
-            if(Queue.UsersInQueue.Where(u => u.uid == user.uid).FirstOrDefault() == null) Queue.UsersInQueue.Add(user);
+            if (Queue.UsersInQueue.Where(u => u.uid == user.uid).FirstOrDefault() == null) Queue.UsersInQueue.Add(user);
         }
         public void RemoveUserFromQueue(UserProfile user)
         {
@@ -544,8 +544,8 @@ namespace MTCG
 
             Tradeoffer tradeoffer = GetTradeofferByTradeoffer_id(tradeoffer_id, cmd);
             // CHECK IF USER WOULD RECEIVE CARDS, ELSE IT IS NO NECESSARY TO SWAP
-            if(tradeoffer.u_receive.Length > 0) ChangeCardOwner(tradeoffer.recipient_uid, tradeoffer.sender_uid, tradeoffer.u_receive, cmd);
-            if(tradeoffer.i_receive.Length > 0) ChangeCardOwner(tradeoffer.sender_uid, tradeoffer.recipient_uid, tradeoffer.i_receive, cmd);
+            if (tradeoffer.u_receive.Length > 0) ChangeCardOwner(tradeoffer.recipient_uid, tradeoffer.sender_uid, tradeoffer.u_receive, cmd);
+            if (tradeoffer.i_receive.Length > 0) ChangeCardOwner(tradeoffer.sender_uid, tradeoffer.recipient_uid, tradeoffer.i_receive, cmd);
 
             return "Tradeoffer successfully accepted!";
         }
@@ -557,7 +557,7 @@ namespace MTCG
                 string cardsCountString = "";
                 for (int i = 1; i <= cards.Length; i++)
                 {
-                    if(i != cards.Length) cardsCountString += $"@c{i},";
+                    if (i != cards.Length) cardsCountString += $"@c{i},";
                     else cardsCountString += $"@c{i}";
                 }
                 string commandText = $"UPDATE collections SET uid = @uid WHERE cid IN ({cardsCountString}) AND uid = @sender_uid";
@@ -565,7 +565,7 @@ namespace MTCG
                 cmd.Parameters.AddWithValue("cards", cards);
                 for (int i = 0; i < cards.Length; i++)
                 {
-                    cmd.Parameters.AddWithValue($"c{i+1}", cards[i]);
+                    cmd.Parameters.AddWithValue($"c{i + 1}", cards[i]);
                 }
                 cmd.Parameters.AddWithValue("uid", uid);
                 cmd.Parameters.AddWithValue("sender_uid", sender_uid);

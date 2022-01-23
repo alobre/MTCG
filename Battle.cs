@@ -47,7 +47,7 @@ namespace MTCG
                     Console.WriteLine($"ROUND #{round}");
                     Console.ForegroundColor = colors[15]; // WHITE
 
-                    if(d1.DeckCards.Count > 0 && d2.DeckCards.Count > 0)
+                    if (d1.DeckCards.Count > 0 && d2.DeckCards.Count > 0)
                     {
                         int RoundWinner = TwoCardsBattle(d1.DeckCards[0], d2.DeckCards[0]);
                         // IN CASE OF DRAW: REMOVE BOTH CARDS FROM 
@@ -167,21 +167,21 @@ namespace MTCG
         public int TwoCardsBattle(Card card1, Card card2)
         {
             // NO SPELLS INVOLVED
-            if(card1.card_type == "monster" && card2.card_type == "monster")
+            if (card1.card_type == "monster" && card2.card_type == "monster")
             {
                 if (card1.damage > card2.damage) return 1;
                 if (card2.damage > card1.damage) return 2;
                 if (card1.damage == card2.damage) return 0;
             }
             // SPELLS INVOLVED
-            if(card1.card_type == "spell" || card2.card_type == "spell")
+            if (card1.card_type == "spell" || card2.card_type == "spell")
             {
                 double c1 = card1.damage;
-                if(c1 * DamagemultiplicatorCalculator(card1, card2) > card2.damage)
+                if (c1 * DamagemultiplicatorCalculator(card1, card2) > card2.damage)
                 {
                     return 1;
                 }
-                if(c1 * DamagemultiplicatorCalculator(card1, card2) < card2.damage)
+                if (c1 * DamagemultiplicatorCalculator(card1, card2) < card2.damage)
                 {
                     return 2;
                 }
